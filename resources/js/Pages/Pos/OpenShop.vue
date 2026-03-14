@@ -1,6 +1,5 @@
 <!--
-  Created/Modified by: Nurita Wahyuni
-  NIM: 202312061
+  Created/Modified by: Nata Toko Team
   Feature: Open Shop - Buka sesi toko harian dengan input modal awal
 -->
 <script setup>

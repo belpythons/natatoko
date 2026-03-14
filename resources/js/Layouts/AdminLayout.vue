@@ -1,6 +1,5 @@
 <!--
-  Created/Modified by: Belva Pranama Sriwibowo
-  NIM: 202312066
+  Created/Modified by: Nata Toko Team
   Feature: Core & Admin - Layout utama halaman admin
 -->
 <script setup>

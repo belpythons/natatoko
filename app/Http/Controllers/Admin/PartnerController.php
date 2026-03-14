@@ -1,7 +1,6 @@
 <?php
 /**
- * Created/Modified by: Belva Pranama Sriwibowo
- * NIM: 202312066
+ * Created/Modified by: Nata Toko Team
  * Feature: Core & Admin - Manajemen partner konsinyasi
  */
 namespace App\Http\Controllers\Admin;
@@ -20,7 +19,8 @@ class PartnerController extends Controller
 {
     public function __construct(
         protected AdminDataService $adminDataService
-    ) {
+        )
+    {
     }
 
     /**
@@ -136,11 +136,12 @@ class PartnerController extends Controller
                     ProductTemplate::where('id', $templateData['id'])
                         ->where('partner_id', $partner->id)
                         ->update([
-                            'name' => $templateData['name'],
-                            'base_price' => $templateData['base_price'],
-                            'default_selling_price' => $templateData['default_selling_price'],
-                        ]);
-                } else {
+                        'name' => $templateData['name'],
+                        'base_price' => $templateData['base_price'],
+                        'default_selling_price' => $templateData['default_selling_price'],
+                    ]);
+                }
+                else {
                     $partner->productTemplates()->create([
                         'name' => $templateData['name'],
                         'base_price' => $templateData['base_price'],

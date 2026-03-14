@@ -1,7 +1,6 @@
 <?php
 /**
- * Created/Modified by: Nurita Wahyuni
- * NIM: 202312061
+ * Created/Modified by: Nata Toko Team
  * Feature: Open Shop - Controller untuk manajemen sesi toko
  */
 namespace App\Http\Controllers\Pos;
@@ -22,7 +21,8 @@ class ShopSessionController extends Controller
         protected ShopSessionService $shopSessionService,
         protected ConsignmentService $consignmentService,
         protected ReportService $reportService
-    ) {
+        )
+    {
     }
 
     /**
@@ -60,13 +60,14 @@ class ShopSessionController extends Controller
         try {
             $session = $this->shopSessionService->startSession(
                 $request->user(),
-                (float) $validated['opening_cash']
+                (float)$validated['opening_cash']
             );
 
             return redirect()
                 ->route('pos.consignment.index')
                 ->with('success', 'Sesi toko berhasil dibuka.');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => $e->getMessage()]);
@@ -95,13 +96,13 @@ class ShopSessionController extends Controller
 
         $consignments = $activeSession->consignments->map(function ($item) {
             return [
-                'id' => $item->id,
-                'product_name' => $item->product_name,
-                'partner' => $item->partner,
-                'qty_initial' => $item->qty_initial,
-                'qty_remaining' => $item->qty_remaining,
-                'base_price' => (float) $item->base_price,
-                'selling_price' => (float) $item->selling_price,
+            'id' => $item->id,
+            'product_name' => $item->product_name,
+            'partner' => $item->partner,
+            'qty_initial' => $item->qty_initial,
+            'qty_remaining' => $item->qty_remaining,
+            'base_price' => (float)$item->base_price,
+            'selling_price' => (float)$item->selling_price,
             ];
         });
 
@@ -144,7 +145,7 @@ class ShopSessionController extends Controller
             // Then close the session
             $this->shopSessionService->closeSession(
                 $activeSession,
-                (float) $validated['actual_cash'],
+                (float)$validated['actual_cash'],
                 $validated['notes'] ?? null
             );
 
@@ -152,7 +153,8 @@ class ShopSessionController extends Controller
                 ->route('pos.session.create')
                 ->with('success', 'Sesi toko berhasil ditutup.')
                 ->with('lastSessionId', $activeSession->id);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => $e->getMessage()]);

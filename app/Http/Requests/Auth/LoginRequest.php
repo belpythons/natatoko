@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -27,8 +28,9 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'pin' => ['nullable', 'string', 'size:4'],
+            'email' => ['required_without:pin', 'nullable', 'string', 'email'],
+            'password' => ['required_without:pin', 'nullable', 'string'],
         ];
     }
 
@@ -41,7 +43,30 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // PIN-based authentication (employees)
+        if ($this->filled('pin')) {
+            $hashedPin = hash('sha256', $this->pin);
+
+            $user = User::where('pin', $hashedPin)
+                ->where('role', 'employee')
+                ->first();
+
+            if (!$user) {
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'pin' => __('PIN tidak valid atau bukan akun karyawan.'),
+                ]);
+            }
+
+            Auth::login($user, false);
+            RateLimiter::clear($this->throttleKey());
+
+            return;
+        }
+
+        // Email/Password authentication (admin or any role)
+        if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -59,7 +84,7 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 
@@ -67,8 +92,10 @@ class LoginRequest extends FormRequest
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
+        $field = $this->filled('pin') ? 'pin' : 'email';
+
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            $field => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -80,6 +107,10 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        if ($this->filled('pin')) {
+            return 'pin|' . $this->ip();
+        }
+
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }

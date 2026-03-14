@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'pin',
         'role',
         'is_active',
         'profile_photo_path',
@@ -34,6 +36,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'pin',
         'remember_token',
     ];
 
@@ -49,6 +52,16 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Auto-hash PIN using SHA-256 on set for deterministic, queryable lookup.
+     */
+    protected function pin(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value) => $value ? hash('sha256', $value) : null,
+        );
     }
 
     public function getActivitylogOptions(): LogOptions

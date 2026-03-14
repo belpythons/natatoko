@@ -1,7 +1,6 @@
 <?php
 /**
- * Created/Modified by: Belva Pranama Sriwibowo
- * NIM: 202312066
+ * Created/Modified by: Nata Toko Team
  * Feature: Core & Admin - Manajemen user dan role
  */
 namespace App\Http\Controllers\Admin;
@@ -18,7 +17,8 @@ class UserManagementController extends Controller
 {
     public function __construct(
         protected AdminDataService $adminDataService
-    ) {
+        )
+    {
     }
 
     /**

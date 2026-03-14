@@ -1,12 +1,12 @@
 <?php
 /**
- * Created/Modified by: Rivaldi
- * NIM: 202312050
+ * Created/Modified by: Nata Toko Team
  * Feature: Order Box - Controller untuk manajemen order box
  */
 namespace App\Http\Controllers\Pos;
 
 use App\Http\Controllers\Controller;
+use App\Events\OrderUpdated;
 use App\Models\BoxOrder;
 use App\Models\BoxTemplate;
 use App\Services\AdminDataService;
@@ -14,6 +14,7 @@ use App\Services\BoxOrderService;
 use App\Services\ShopSessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,7 +24,8 @@ class BoxOrderController extends Controller
         protected BoxOrderService $boxOrderService,
         protected AdminDataService $adminDataService,
         protected ShopSessionService $shopSessionService
-    ) {
+        )
+    {
     }
 
     /**
@@ -34,7 +36,7 @@ class BoxOrderController extends Controller
         $user = auth()->user();
         $activeSession = $this->shopSessionService->getActiveSession($user);
 
-        $upcomingOrders = $this->boxOrderService->getUpcomingOrdersWithCountdown();
+        $upcomingOrders = $this->boxOrderService->getUpcomingOrders();
         $todayOrders = $this->boxOrderService->getTodayOrders();
 
         return Inertia::render('Pos/Box/Index', [
@@ -85,7 +87,8 @@ class BoxOrderController extends Controller
             return redirect()
                 ->route('pos.box.index')
                 ->with('success', 'Order berhasil dibuat untuk ' . $order->customer_name);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => $e->getMessage()]);
@@ -109,7 +112,8 @@ class BoxOrderController extends Controller
             return redirect()
                 ->back()
                 ->with('success', 'Bukti pembayaran berhasil diupload.');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => $e->getMessage()]);
@@ -121,30 +125,22 @@ class BoxOrderController extends Controller
      * - For paid/completed: requires payment_proof upload
      * - For cancelled: requires cancellation_reason
      */
-    public function updateStatus(Request $request, int $orderId): RedirectResponse
+    public function updateStatus(Request $request, BoxOrder $order): RedirectResponse
     {
-        $rules = [
+        $validated = $request->validate([
             'status' => 'required|in:pending,paid,completed,cancelled',
-        ];
-
-        // Conditional validation based on target status
-        $targetStatus = $request->input('status');
-
-        if (in_array($targetStatus, ['paid', 'completed'])) {
-            // If order doesn't have payment proof yet, require it
-            $order = BoxOrder::findOrFail($orderId);
-            if (!$order->payment_proof_path) {
-                $rules['payment_proof'] = 'required|image|max:5120';
-            }
-        }
-
-        if ($targetStatus === 'cancelled') {
-            $rules['cancellation_reason'] = 'required|string|max:1000';
-        }
-
-        $validated = $request->validate($rules);
-
-        $order = BoxOrder::findOrFail($orderId);
+            'payment_proof' => [
+                Rule::requiredIf(
+                in_array($request->input('status'), ['paid', 'completed'])
+                && !$order->payment_proof_path
+            ),
+                'nullable', 'image', 'max:5120',
+            ],
+            'cancellation_reason' => [
+                Rule::requiredIf($request->input('status') === 'cancelled'),
+                'nullable', 'string', 'max:1000',
+            ],
+        ]);
 
         try {
             // Handle payment proof upload if provided
@@ -154,16 +150,21 @@ class BoxOrderController extends Controller
             }
 
             // Handle cancellation reason
-            if ($targetStatus === 'cancelled' && !empty($validated['cancellation_reason'])) {
+            if ($validated['status'] === 'cancelled' && !empty($validated['cancellation_reason'])) {
                 $this->boxOrderService->cancelOrderWithReason($order, $validated['cancellation_reason']);
-            } else {
+            }
+            else {
                 $this->boxOrderService->updateOrderStatus($order, $validated['status']);
             }
+            // Broadcast real-time update via Reverb
+            $order->refresh();
+            event(new OrderUpdated($order));
 
             return redirect()
                 ->back()
                 ->with('success', 'Status order berhasil diperbarui.');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => $e->getMessage()]);

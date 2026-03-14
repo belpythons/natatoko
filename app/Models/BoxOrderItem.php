@@ -1,7 +1,6 @@
 <?php
 /**
- * Created/Modified by: Rivaldi
- * NIM: 202312050
+ * Created/Modified by: Nata Toko Team
  * Feature: Order Box - Model untuk item dalam order box
  */
 namespace App\Models;

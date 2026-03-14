@@ -1,7 +1,6 @@
 <?php
 /**
- * Created/Modified by: Belva Pranama Sriwibowo
- * NIM: 202312066
+ * Created/Modified by: Nata Toko Team
  * Feature: Core & Admin - Dashboard admin dengan statistik dan laporan
  */
 namespace App\Http\Controllers\Admin;
@@ -25,7 +24,8 @@ class DashboardController extends Controller
         protected ShopSessionService $shopSessionService,
         protected DashboardService $dashboardService,
         protected ReportService $reportService
-    ) {
+        )
+    {
     }
 
     /**

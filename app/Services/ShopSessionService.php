@@ -1,5 +1,5 @@
 <?php
-//Nurita Wahyuni | 202312061
+// Created/Modified by: Nata Toko Team
 namespace App\Services;
 
 use App\Models\ShopSession;
@@ -113,21 +113,23 @@ class ShopSessionService
         $discrepancyStatus = '';
         if ($discrepancy > 0) {
             $discrepancyStatus = ' (Kurang/Shortage)';
-        } elseif ($discrepancy < 0) {
+        }
+        elseif ($discrepancy < 0) {
             $discrepancyStatus = ' (Lebih/Overage)';
-        } else {
+        }
+        else {
             $discrepancyStatus = ' (Pas)';
         }
 
         // Generate notes
         $closingNotes = sprintf(
             "Total Pendapatan: Rp %s\nTotal Profit: Rp %s\nKas Awal: Rp %s\nKas Akhir Sistem: Rp %s\nKas Akhir Aktual: Rp %s\nSelisih: Rp %s%s%s",
-            number_format((float) ($summary['total_income'] ?? 0), 0, ',', '.'),
-            number_format((float) ($summary['total_profit'] ?? 0), 0, ',', '.'),
-            number_format((float) ($session->opening_cash ?? 0), 0, ',', '.'),
-            number_format((float) ($systemCalculation ?? 0), 0, ',', '.'),
-            number_format((float) ($actualCash ?? 0), 0, ',', '.'),
-            number_format((float) abs($discrepancy ?? 0), 0, ',', '.'),
+            number_format((float)($summary['total_income'] ?? 0), 0, ',', '.'),
+            number_format((float)($summary['total_profit'] ?? 0), 0, ',', '.'),
+            number_format((float)($session->opening_cash ?? 0), 0, ',', '.'),
+            number_format((float)($systemCalculation ?? 0), 0, ',', '.'),
+            number_format((float)($actualCash ?? 0), 0, ',', '.'),
+            number_format((float)abs($discrepancy ?? 0), 0, ',', '.'),
             $discrepancyStatus,
             $notes ? "\nCatatan: " . $notes : ''
         );

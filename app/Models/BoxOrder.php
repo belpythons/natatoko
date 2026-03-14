@@ -1,7 +1,6 @@
 <?php
 /**
- * Created/Modified by: Rivaldi
- * NIM: 202312050
+ * Created/Modified by: Nata Toko Team
  * Feature: Order Box - Model untuk data order box
  */
 namespace App\Models;
@@ -9,9 +8,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class BoxOrder extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'customer_name',
         'box_template_id',
@@ -28,12 +30,19 @@ class BoxOrder extends Model
         'pickup_datetime' => 'datetime',
     ];
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logOnlyDirty();
+    }
+
     /**
      * Get the template for this order (optional for custom orders).
      */
     public function template(): BelongsTo
     {
-        return $this->belongsTo(BoxTemplate::class, 'box_template_id');
+        return $this->belongsTo(BoxTemplate::class , 'box_template_id');
     }
 
     /**
@@ -107,8 +116,8 @@ class BoxOrder extends Model
             'hours' => $diff->h,
             'minutes' => $diff->i,
             'text' => $diff->d > 0
-                ? "{$diff->d} hari {$diff->h} jam"
-                : "{$diff->h} jam {$diff->i} menit"
+            ? "{$diff->d} hari {$diff->h} jam"
+            : "{$diff->h} jam {$diff->i} menit"
         ];
     }
 

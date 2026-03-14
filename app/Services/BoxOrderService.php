@@ -1,7 +1,6 @@
 <?php
 /**
- * Created/Modified by: Rivaldi
- * NIM: 202312050
+ * Created/Modified by: Nata Toko Team
  * Feature: Order Box - Service untuk logika bisnis order box
  */
 namespace App\Services;
@@ -31,7 +30,8 @@ class BoxOrderService
                 foreach ($data['items'] as $item) {
                     $itemsSubtotal += $item['quantity'] * $item['unit_price'];
                 }
-            } elseif (!empty($data['box_template_id'])) {
+            }
+            elseif (!empty($data['box_template_id'])) {
                 // Fallback to template-based pricing
                 $template = BoxTemplate::findOrFail($data['box_template_id']);
                 if (!$template->is_active) {
@@ -47,7 +47,7 @@ class BoxOrderService
                 'customer_name' => $data['customer_name'],
                 'box_template_id' => $data['box_template_id'] ?? null,
                 'quantity' => $boxQuantity,
-                'total_price' => $data['total_price'] ?? $totalPrice,
+                'total_price' => $totalPrice,
                 'pickup_datetime' => $data['pickup_datetime'],
                 'status' => 'pending',
             ]);
@@ -83,7 +83,6 @@ class BoxOrderService
 
         $order->update([
             'payment_proof_path' => $path,
-            'status' => 'paid',
         ]);
 
         return $order->fresh();

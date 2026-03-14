@@ -1,13 +1,16 @@
 <?php
-//Nurita Wahyuni | 202312061
+// Created/Modified by: Nata Toko Team
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class ShopSession extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'user_id',
         'opened_at',
@@ -26,6 +29,13 @@ class ShopSession extends Model
         'closing_cash_system' => 'decimal:2',
         'closing_cash_actual' => 'decimal:2',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->logOnlyDirty();
+    }
 
     /**
      * Get the user that owns this session.

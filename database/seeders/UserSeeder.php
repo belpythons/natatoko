@@ -31,10 +31,10 @@ class UserSeeder extends Seeder
         // Employee/Kasir Users
         $employees = [
             ['name' => 'Staff User', 'email' => 'staff@posita.com'],
-            ['name' => 'Rivaldi', 'email' => 'rivaldi@posita.com'],
-            ['name' => 'Amar', 'email' => 'amar@posita.com'],
-            ['name' => 'Nurita', 'email' => 'nurita@posita.com'],
-            ['name' => 'Belva', 'email' => 'belvapranamasriwibowo@gmail.com'],
+            ['name' => 'Admin Nata', 'email' => 'admin@natatoko.com'],
+            ['name' => 'Kasir Satu', 'email' => 'kasir1@natatoko.com'],
+            ['name' => 'Kasir Dua', 'email' => 'kasir2@natatoko.com'],
+            ['name' => 'Owner', 'email' => 'owner@natatoko.com'],
         ];
 
         foreach ($employees as $employee) {

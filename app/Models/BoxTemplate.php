@@ -1,5 +1,5 @@
 <?php
-// Rivaldi | 202312050
+// Created/Modified by: Nata Toko Team
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
