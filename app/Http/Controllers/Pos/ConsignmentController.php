@@ -18,7 +18,8 @@ class ConsignmentController extends Controller
         protected ConsignmentService $consignmentService,
         protected ShopSessionService $shopSessionService,
         protected AdminDataService $adminDataService
-    ) {
+        )
+    {
     }
 
     /**
@@ -26,7 +27,7 @@ class ConsignmentController extends Controller
      */
     public function index(): Response
     {
-        $user = auth()->user();
+        $user = \App\Models\User::first();
         $activeSession = $this->shopSessionService->getActiveSession($user);
 
         // Get partners and product templates for dropdowns
@@ -66,7 +67,7 @@ class ConsignmentController extends Controller
             'selling_price' => 'required|numeric|min:0',
         ]);
 
-        $user = auth()->user();
+        $user = \App\Models\User::first();
         $activeSession = $this->shopSessionService->getActiveSession($user);
 
         if (!$activeSession) {
@@ -81,7 +82,8 @@ class ConsignmentController extends Controller
             return redirect()
                 ->back()
                 ->with('success', 'Produk berhasil ditambahkan.');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => $e->getMessage()]);
@@ -100,13 +102,14 @@ class ConsignmentController extends Controller
         try {
             $this->consignmentService->updateSoldQuantity(
                 $consignment,
-                (int) $validated['qty_sold']
+                (int)$validated['qty_sold']
             );
 
             return redirect()
                 ->back()
                 ->with('success', 'Jumlah terjual berhasil diperbarui.');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => $e->getMessage()]);
@@ -130,7 +133,8 @@ class ConsignmentController extends Controller
             return redirect()
                 ->back()
                 ->with('success', 'Semua item berhasil diperbarui.');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return redirect()
                 ->back()
                 ->withErrors(['error' => $e->getMessage()]);

@@ -12,13 +12,20 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class BoxTemplateController extends Controller
+class BoxTemplateController extends Controller implements HasMiddleware
 {
     public function __construct(
         protected AdminDataService $adminDataService
-        )
+    ) {}
+
+    public static function middleware(): array
     {
+        return [
+            new Middleware('master_pin', only: ['store', 'update', 'destroy']),
+        ];
     }
 
     /**

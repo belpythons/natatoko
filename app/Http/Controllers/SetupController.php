@@ -27,16 +27,21 @@ class SetupController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'master_pin' => 'required|string|digits:6',
+            'store_pin' => 'required|string|digits:6',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
-            'role' => 'admin',
+            'master_pin' => $validated['master_pin'],
+            'store_pin' => $validated['store_pin'],
             'is_active' => true,
         ]);
 
-        return redirect('/login')->with('status', 'Admin berhasil dibuat! Silahkan login.');
+        \Illuminate\Support\Facades\Auth::login($user);
+
+        return redirect()->route('admin.dashboard')->with('status', 'Setup berhasil diselesaikan!');
     }
 }
