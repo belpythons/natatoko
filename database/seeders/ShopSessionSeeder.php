@@ -17,11 +17,15 @@ class ShopSessionSeeder extends Seeder
      */
     public function run(): void
     {
-        $employees = User::where('role', 'employee')->get();
+        $employees = User::all();
         $partners = Partner::with('productTemplates')->get();
 
-        if ($employees->isEmpty() || $partners->isEmpty()) {
-            $this->command->warn('Skipping ShopSessionSeeder: No employees or partners found.');
+        if ($employees->isEmpty()) {
+            return;
+        }
+
+        if ($partners->isEmpty()) {
+            $this->command->warn('Skipping ShopSessionSeeder: No partners found.');
             return;
         }
 
@@ -57,8 +61,8 @@ class ShopSessionSeeder extends Seeder
                     $qtyInitial = rand(15, 40);
                     $qtySold = rand(8, $qtyInitial);
                     $qtyRemaining = $qtyInitial - $qtySold;
-                    $basePrice = (float) $product->base_price;
-                    $sellingPrice = (float) $product->default_selling_price;
+                    $basePrice = (float)$product->base_price;
+                    $sellingPrice = (float)$product->default_selling_price;
                     $subtotalIncome = $qtySold * $sellingPrice;
 
                     DailyConsignment::create([
@@ -88,14 +92,14 @@ class ShopSessionSeeder extends Seeder
                 'closing_cash_system' => $expectedCash,
                 'closing_cash_actual' => $actualCash,
                 'notes' => sprintf(
-                    "Total Pendapatan: Rp %s\nTotal Profit: Rp %s\nKas Awal: Rp %s\nKas Akhir Sistem: Rp %s\nKas Akhir Aktual: Rp %s\nSelisih: Rp %s",
-                    number_format($totalIncome, 0, ',', '.'),
-                    number_format($totalProfit, 0, ',', '.'),
-                    number_format($openingCash, 0, ',', '.'),
-                    number_format($expectedCash, 0, ',', '.'),
-                    number_format($actualCash, 0, ',', '.'),
-                    number_format($variance, 0, ',', '.')
-                ),
+                "Total Pendapatan: Rp %s\nTotal Profit: Rp %s\nKas Awal: Rp %s\nKas Akhir Sistem: Rp %s\nKas Akhir Aktual: Rp %s\nSelisih: Rp %s",
+                number_format($totalIncome, 0, ',', '.'),
+                number_format($totalProfit, 0, ',', '.'),
+                number_format($openingCash, 0, ',', '.'),
+                number_format($expectedCash, 0, ',', '.'),
+                number_format($actualCash, 0, ',', '.'),
+                number_format($variance, 0, ',', '.')
+            ),
             ]);
         }
 

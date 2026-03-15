@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class BoxTemplate extends Model
 {
+    use HasFactory, LogsActivity;
+
     protected $fillable = [
         'name',
         'type',

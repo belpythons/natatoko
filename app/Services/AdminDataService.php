@@ -24,13 +24,9 @@ class AdminDataService
     /**
      * Get all users (optionally filtered by role).
      */
-    public function getUsers(?string $role = null): Collection
+    public function getUsers(): Collection
     {
         $query = User::query();
-
-        if ($role) {
-            $query->where('role', $role);
-        }
 
         return $query->orderBy('name')->get();
     }
@@ -44,7 +40,6 @@ class AdminDataService
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => $data['role'] ?? 'employee',
             'is_active' => $data['is_active'] ?? true,
         ]);
     }
@@ -57,7 +52,6 @@ class AdminDataService
         $updateData = [
             'name' => $data['name'] ?? $user->name,
             'email' => $data['email'] ?? $user->email,
-            'role' => $data['role'] ?? $user->role,
             'is_active' => $data['is_active'] ?? $user->is_active,
         ];
 

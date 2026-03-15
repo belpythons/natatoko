@@ -15,21 +15,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+            \App\Http\Middleware\CheckSetup::class,
         ]);
 
         // Register middleware aliases
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
-            'setup' => \App\Http\Middleware\CheckSetup::class,
+            'master_pin' => \App\Http\Middleware\MasterPinValidator::class,
+            'pos_auth' => \App\Http\Middleware\PosAuth::class,
         ]);
-
-        // Redirect authenticated users based on role
+        // Redirect authenticated users to admin dashboard (since standard auth is only for admin)
         $middleware->redirectUsersTo(function () {
-            $user = \Illuminate\Support\Facades\Auth::user();
-            if ($user?->role === 'admin') {
-                return '/admin';
-            }
-            return '/pos/open';
+            return '/admin';
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {

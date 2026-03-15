@@ -6,7 +6,6 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\Admin;
-use App\Http\Controllers\Api\AiReportController;
 use App\Http\Controllers\Pos;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -18,41 +17,36 @@ use Inertia\Inertia;
  |--------------------------------------------------------------------------
  */
 
-// First-time setup (only accessible if no admin exists)
-Route::middleware('setup')->group(function () {
-    Route::get('/setup', [SetupController::class , 'index'])->name('setup');
-    Route::post('/setup', [SetupController::class , 'store']);
-});
+// First-time setup (accessible globally via CheckSetup middleware)
+Route::get('/setup', [SetupController::class , 'index'])->name('setup');
+Route::post('/setup', [SetupController::class , 'store']);
 
-// Redirect root to login
+// Redirect root
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// General authenticated routes
+// General authenticated routes (Admin)
 Route::middleware('auth')->group(function () {
     // Dashboard redirect
     Route::get('/dashboard', function () {
-            $user = auth()->user();
-            if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            }
-            return redirect()->route('pos.session.create');
+            return redirect()->route('admin.dashboard');
         }
         )->name('dashboard');
 
         // Profile routes
         Route::get('/profile', [ProfileController::class , 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class , 'update'])->name('profile.update');
+        Route::patch('/profile/pin', [ProfileController::class , 'updatePin'])->name('profile.pin.update');
         Route::delete('/profile', [ProfileController::class , 'destroy'])->name('profile.destroy');
     });
 
 /*
  |--------------------------------------------------------------------------
- | Admin Routes (Role: admin only)
+ | Admin Routes
  |--------------------------------------------------------------------------
  */
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [Admin\DashboardController::class , 'index'])->name('dashboard');
 
@@ -66,19 +60,27 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Box Templates CRUD
     Route::resource('box-templates', Admin\BoxTemplateController::class);
 
-    // User Management CRUD
-    Route::resource('users', Admin\UserManagementController::class);
 
-    // AI Smart Reports (Gemini)
-    Route::post('/ai-report', [AiReportController::class , 'generate'])->name('ai-report');
+    // Activity Logs
+    Route::get('activity-logs', [Admin\ActivityLogController::class , 'index'])->name('activity-logs.index');
 });
 
 /*
  |--------------------------------------------------------------------------
- | POS Routes (Role: employee)
+ | POS Auth Routes
  |--------------------------------------------------------------------------
  */
-Route::middleware(['auth', 'role:employee,admin'])->prefix('pos')->name('pos.')->group(function () {
+Route::get('/pos/login', [Pos\AuthController::class , 'showLogin'])->name('pos.login');
+Route::post('/pos/login', [Pos\AuthController::class , 'login']);
+
+/*
+ |--------------------------------------------------------------------------
+ | POS Routes
+ |--------------------------------------------------------------------------
+ */
+Route::middleware('pos_auth')->prefix('pos')->name('pos.')->group(function () {
+    Route::post('/logout', [Pos\AuthController::class , 'logout'])->name('logout');
+
     // Shop Session
     Route::get('/open', [Pos\ShopSessionController::class , 'create'])->name('session.create');
     Route::post('/open', [Pos\ShopSessionController::class , 'store'])->name('session.store');

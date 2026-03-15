@@ -1,0 +1,30 @@
+
+> build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+resources/js/Pages/Admin/ActivityLogs/Index.vue (58:2): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+✓ 2647 modules transformed.
+x Build failed in 6.33s
+error during build:
+resources/js/Pages/Admin/ActivityLogs/Index.vue (58:2): "DialogContent" is not exported by "resources/js/Components/ui/index.js", imported by "resources/js/Pages/Admin/ActivityLogs/Index.vue".
+file: /home/blewah/posita/resources/js/Pages/Admin/ActivityLogs/Index.vue:58:2
+
+56:   Card,
+57:   Dialog,
+58:   DialogContent,
+      ^
+59:   DialogHeader,
+60:   DialogTitle,
+
+    at getRollupError (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at error (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+    at Module.error (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/node-entry.js:17022:16)
+    at Module.traceVariable (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/node-entry.js:17478:29)
+    at ModuleScope.findVariable (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/node-entry.js:15141:39)
+    at ChildScope.findVariable (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)
+    at FunctionScope.findVariable (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)
+    at FunctionBodyScope.findVariable (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)
+    at ReturnValueScope.findVariable (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)
+    at FunctionBodyScope.findVariable (file:///home/blewah/posita/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)

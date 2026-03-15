@@ -37,11 +37,11 @@ class DashboardService
     public function getSalesTrend(string $range = 'daily'): array
     {
         return match ($range) {
-            'daily' => $this->getDailyTrend(),
-            'weekly' => $this->getWeeklyTrend(),
-            'monthly' => $this->getMonthlyTrend(),
-            default => $this->getDailyTrend(),
-        };
+                'daily' => $this->getDailyTrend(),
+                'weekly' => $this->getWeeklyTrend(),
+                'monthly' => $this->getMonthlyTrend(),
+                default => $this->getDailyTrend(),
+            };
     }
 
     /**
@@ -113,9 +113,9 @@ class DashboardService
                 'label' => "Minggu {$weekNumber}",
                 'full_date' => $weekStart->format('Y-m-d'),
                 'date_range' => $weekStart->format('d M') . ' - ' . $weekEnd->format('d M'),
-                'revenue' => (float) $sessionAmount + (float) $boxAmount,
-                'session_revenue' => (float) $sessionAmount,
-                'box_revenue' => (float) $boxAmount,
+                'revenue' => (float)$sessionAmount + (float)$boxAmount,
+                'session_revenue' => (float)$sessionAmount,
+                'box_revenue' => (float)$boxAmount,
             ];
         }
 
@@ -166,9 +166,9 @@ class DashboardService
             $data[] = [
                 'label' => $month->translatedFormat('M'),
                 'full_date' => $key,
-                'revenue' => (float) $sessionAmount + (float) $boxAmount,
-                'session_revenue' => (float) $sessionAmount,
-                'box_revenue' => (float) $boxAmount,
+                'revenue' => (float)$sessionAmount + (float)$boxAmount,
+                'session_revenue' => (float)$sessionAmount,
+                'box_revenue' => (float)$boxAmount,
             ];
         }
 
@@ -222,7 +222,8 @@ class DashboardService
 
             if ($groupBy === 'date') {
                 $results = $query->pluck('total_revenue', 'date')->toArray();
-            } else {
+            }
+            else {
                 // Group by Month or Year based on formatting
                 $format = ($groupBy === 'month') ? '%Y-%m' : '%Y-%m-%d';
                 $dateFormatExpr = $this->getDateFormat('date', $format);
@@ -278,8 +279,8 @@ class DashboardService
             ->whereIn('status', ['paid', 'completed'])
             ->sum('total_price');
 
-        $todaySales = (float) $todaySessionSales + (float) $todayBoxSales;
-        $yesterdaySales = (float) $yesterdaySessionSales + (float) $yesterdayBoxSales;
+        $todaySales = (float)$todaySessionSales + (float)$todayBoxSales;
+        $yesterdaySales = (float)$yesterdaySessionSales + (float)$yesterdayBoxSales;
 
         // Calculate trend percentage
         $trendPercent = $yesterdaySales > 0
@@ -300,7 +301,7 @@ class DashboardService
      */
     public function getDailySummary(string $date = null): array
     {
-        $date = $date ? Carbon::parse($date) : Carbon::today();
+        $date = $date ?Carbon::parse($date) : Carbon::today();
 
         $sessions = ShopSession::whereDate('opened_at', $date)
             ->with(['user', 'consignments'])
@@ -320,10 +321,10 @@ class DashboardService
         return [
             'date' => $date->format('Y-m-d'),
             'total_sessions' => $sessions->count(),
-            'total_revenue' => (float) $sessionRevenue + (float) $boxRevenue,
-            'session_revenue' => (float) $sessionRevenue,
-            'box_revenue' => (float) $boxRevenue,
-            'total_profit' => (float) $sessionProfit + (float) $boxRevenue,
+            'total_revenue' => (float)$sessionRevenue + (float)$boxRevenue,
+            'session_revenue' => (float)$sessionRevenue,
+            'box_revenue' => (float)$boxRevenue,
+            'total_profit' => (float)$sessionProfit + (float)$boxRevenue,
             'total_items_sold' => $sessions->sum(fn($s) => $s->consignments->sum('qty_sold')),
             'sessions' => $sessions,
         ];
@@ -340,18 +341,18 @@ class DashboardService
 
         return [
             'today_orders' => BoxOrder::whereDate('created_at', $today)->count(),
-            'today_revenue' => (float) BoxOrder::whereDate('created_at', $today)
-                ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
+            'today_revenue' => (float)BoxOrder::whereDate('created_at', $today)
+            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
             'pending_orders' => BoxOrder::where('status', 'pending')->count(),
             'month_orders' => BoxOrder::where('created_at', '>=', $thisMonth)->count(),
-            'month_revenue' => (float) BoxOrder::where('created_at', '>=', $thisMonth)
-                ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
+            'month_revenue' => (float)BoxOrder::where('created_at', '>=', $thisMonth)
+            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
             'upcoming_pickups' => BoxOrder::where('pickup_datetime', '>=', Carbon::now())
-                ->where('status', '!=', 'cancelled')
-                ->orderBy('pickup_datetime')
-                ->limit(5)
-                ->with('template')
-                ->get(),
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('pickup_datetime')
+            ->limit(5)
+            ->with('template')
+            ->get(),
         ];
     }
 
@@ -362,7 +363,7 @@ class DashboardService
     {
         return [
             'total_partners' => \App\Models\Partner::where('is_active', true)->count(),
-            'total_employees' => \App\Models\User::where('role', 'employee')->where('is_active', true)->count(),
+            'total_employees' => \App\Models\User::count(),
             'active_sessions' => ShopSession::where('status', 'open')->count(),
             'total_box_templates' => \App\Models\BoxTemplate::where('is_active', true)->count(),
         ];
@@ -402,12 +403,12 @@ class DashboardService
             ->sum('total_price');
 
         return [
-            'today_profit' => (float) $todaySessionProfit + (float) $todayBoxProfit,
-            'today_session_profit' => (float) $todaySessionProfit,
-            'today_box_profit' => (float) $todayBoxProfit,
-            'month_profit' => (float) $monthSessionProfit + (float) $monthBoxProfit,
-            'month_session_profit' => (float) $monthSessionProfit,
-            'month_box_profit' => (float) $monthBoxProfit,
+            'today_profit' => (float)$todaySessionProfit + (float)$todayBoxProfit,
+            'today_session_profit' => (float)$todaySessionProfit,
+            'today_box_profit' => (float)$todayBoxProfit,
+            'month_profit' => (float)$monthSessionProfit + (float)$monthBoxProfit,
+            'month_session_profit' => (float)$monthSessionProfit,
+            'month_box_profit' => (float)$monthBoxProfit,
         ];
     }
 
