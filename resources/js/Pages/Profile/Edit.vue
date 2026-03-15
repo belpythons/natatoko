@@ -2,6 +2,7 @@
 import { Head, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import UpdatePinForm from './Partials/UpdatePinForm.vue'
 import {
   Card,
   CardHeader,
@@ -169,7 +170,7 @@ const deleteAccount = () => {
           
           <div class="flex items-center gap-3">
                <div class="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary capitalize">
-                 {{ user?.role || 'User' }}
+                 Admin
                </div>
                
                <!-- Photo Actions -->
@@ -285,6 +286,9 @@ const deleteAccount = () => {
           </form>
         </CardContent>
       </Card>
+
+      <!-- Update PIN Card -->
+      <UpdatePinForm />
 
       <!-- Update Password Card -->
       <Card>
