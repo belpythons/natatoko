@@ -47,7 +47,10 @@ const props = defineProps({
 })
 
 const page = usePage()
-const user = computed(() => page.props.auth?.user)
+const user = computed(() => ({
+  name: 'Kasir',
+  email: 'Staff POS'
+}))
 
 // Try to get session info from page props if not passed directly
 const session = computed(() => {
@@ -175,7 +178,7 @@ const toggleSidebar = () => {
             </DropdownMenuItem>
 
             <DropdownMenuItem as-child destructive>
-              <Link href="/logout" method="post" as="button" class="flex items-center w-full">
+              <Link href="/pos/logout" method="post" as="button" class="flex items-center w-full">
                 <LogOut class="w-4 h-4 mr-2" />
                 Logout
               </Link>

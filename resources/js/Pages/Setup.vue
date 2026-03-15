@@ -13,6 +13,8 @@ const form = useForm({
   email: '',
   password: '',
   password_confirmation: '',
+  master_pin: '',
+  store_pin: '',
 })
 
 const showPassword = ref(false)
@@ -124,6 +126,52 @@ const submit = () => {
               </div>
               <p v-if="form.errors.password" class="text-sm text-red-400">
                 {{ form.errors.password }}
+              </p>
+            </div>
+
+            <!-- Master PIN -->
+            <div class="space-y-2">
+              <InputLabel for="master_pin" class="text-slate-700">Master PIN (6 Angka untuk Admin)</InputLabel>
+              <div class="relative">
+                <Lock class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 z-10" />
+                <TextInput
+                  id="master_pin"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="6"
+                  v-model="form.master_pin"
+                  variant="auth"
+                  :error="!!form.errors.master_pin"
+                  class="pl-10 py-3 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500"
+                  placeholder="Contoh: 123456"
+                  required
+                />
+              </div>
+              <p v-if="form.errors.master_pin" class="text-sm text-red-400">
+                {{ form.errors.master_pin }}
+              </p>
+            </div>
+
+            <!-- Store PIN -->
+            <div class="space-y-2">
+              <InputLabel for="store_pin" class="text-slate-700">Store PIN (6 Angka untuk Staff Kasir)</InputLabel>
+              <div class="relative">
+                <Lock class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 z-10" />
+                <TextInput
+                  id="store_pin"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="6"
+                  v-model="form.store_pin"
+                  variant="auth"
+                  :error="!!form.errors.store_pin"
+                  class="pl-10 py-3 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500"
+                  placeholder="Contoh: 654321"
+                  required
+                />
+              </div>
+              <p v-if="form.errors.store_pin" class="text-sm text-red-400">
+                {{ form.errors.store_pin }}
               </p>
             </div>
 
