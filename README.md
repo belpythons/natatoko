@@ -53,14 +53,18 @@ php artisan migrate:fresh --seed
 # 6. Run development server
 npm run dev
 php artisan serve
+
+# 7. Initial Access
+# Akses aplikasi di http://localhost:8000.
+# Jika database masih kosong (belum ada admin), Anda akan otomatis diarahkan ke halaman `/setup` untuk membuat akun Admin pertama.
 ```
 
 ### Test Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@posita.com | password |
-| Staff | staff@posita.com | password |
+| Role | Email | Password | PIN |
+|------|-------|----------|-----|
+| Admin | admin@posita.com | password | 123456 |
+| Staff | staff@posita.com | password | 654321 |
 
 ---
 

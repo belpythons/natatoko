@@ -13,7 +13,6 @@ import {
   LayoutDashboard,
   Users,
   Package,
-  UserCircle,
   Menu,
   LogOut,
   Settings,
@@ -21,7 +20,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Sun,
-  Moon
+  Moon,
+  ScrollText
 } from 'lucide-vue-next'
 
 const { toggleTheme, isDark } = useTheme()
@@ -34,7 +34,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Partners', href: '/admin/partners', icon: Users },
   { name: 'Box Templates', href: '/admin/box-templates', icon: Package },
-  { name: 'Users', href: '/admin/users', icon: UserCircle },
+  { name: 'Log Aktivitas', href: '/admin/activity-logs', icon: ScrollText },
 ]
 
 const isSidebarCollapsed = ref(localStorage.getItem('admin-sidebar-collapsed') === 'true')

@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
+use App\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
@@ -23,8 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'pin',
-        'role',
+        'master_pin',
+        'store_pin',
         'is_active',
         'profile_photo_path',
     ];
@@ -36,7 +35,8 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'pin',
+        'master_pin',
+        'store_pin',
         'remember_token',
     ];
 
@@ -55,37 +55,25 @@ class User extends Authenticatable
     }
 
     /**
-     * Auto-hash PIN using SHA-256 on set for deterministic, queryable lookup.
+     * Auto-hash Master PIN using SHA-256 on set.
      */
-    protected function pin(): Attribute
+    protected function masterPin(): Attribute
     {
         return Attribute::make(
             set: fn (?string $value) => $value ? hash('sha256', $value) : null,
         );
     }
 
-    public function getActivitylogOptions(): LogOptions
+    /**
+     * Auto-hash Store PIN using SHA-256 on set.
+     */
+    protected function storePin(): Attribute
     {
-        return LogOptions::defaults()
-            ->logOnly(['*'])
-            ->logOnlyDirty();
+        return Attribute::make(
+            set: fn (?string $value) => $value ? hash('sha256', $value) : null,
+        );
     }
 
-    /**
-     * Check if user is admin.
-     */
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    /**
-     * Check if user is employee.
-     */
-    public function isEmployee(): bool
-    {
-        return $this->role === 'employee';
-    }
 
     /**
      * Get the shop sessions for this user.

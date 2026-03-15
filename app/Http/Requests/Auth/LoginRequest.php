@@ -28,7 +28,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pin' => ['nullable', 'string', 'size:4'],
+            'pin' => ['nullable', 'string', 'digits:6'],
             'email' => ['required_without:pin', 'nullable', 'string', 'email'],
             'password' => ['required_without:pin', 'nullable', 'string'],
         ];
@@ -43,19 +43,17 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // PIN-based authentication (employees)
+        // PIN-based authentication (admin quick login)
         if ($this->filled('pin')) {
             $hashedPin = hash('sha256', $this->pin);
 
-            $user = User::where('pin', $hashedPin)
-                ->where('role', 'employee')
-                ->first();
+            $user = User::where('master_pin', $hashedPin)->first();
 
             if (!$user) {
                 RateLimiter::hit($this->throttleKey());
 
                 throw ValidationException::withMessages([
-                    'pin' => __('PIN tidak valid atau bukan akun karyawan.'),
+                    'pin' => __('PIN tidak valid.'),
                 ]);
             }
 
@@ -65,7 +63,7 @@ class LoginRequest extends FormRequest
             return;
         }
 
-        // Email/Password authentication (admin or any role)
+        // Email/Password authentication
         if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 

@@ -51,6 +51,25 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update the user's PIN information.
+     */
+    public function updatePin(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'master_pin' => ['required', 'string', 'digits:6'],
+            'store_pin' => ['required', 'string', 'digits:6'],
+            'verify_password' => ['required', 'current_password'],
+        ]);
+
+        $request->user()->update([
+            'master_pin' => $validated['master_pin'],
+            'store_pin' => $validated['store_pin']
+        ]);
+
+        return Redirect::route('profile.edit');
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

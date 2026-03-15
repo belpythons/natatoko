@@ -13,38 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin User
-        $admins = [
-            ['name' => 'admin posita', 'email' => 'admin@posita.com'],
-            ['name' => 'bebe', 'email' => 'bebleblablibub@gmail.com'],
-        ];
-        foreach ($admins as $admin) {
-            User::create([
-                'name' => $admin['name'],
-                'email' => $admin['email'],
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-                'is_active' => true,
-            ]);
-        }
-
-        // Employee/Kasir Users
-        $employees = [
-            ['name' => 'Staff User', 'email' => 'staff@posita.com'],
-            ['name' => 'Admin Nata', 'email' => 'admin@natatoko.com'],
-            ['name' => 'Kasir Satu', 'email' => 'kasir1@natatoko.com'],
-            ['name' => 'Kasir Dua', 'email' => 'kasir2@natatoko.com'],
-            ['name' => 'Owner', 'email' => 'owner@natatoko.com'],
-        ];
-
-        foreach ($employees as $employee) {
-            User::create([
-                'name' => $employee['name'],
-                'email' => $employee['email'],
-                'password' => Hash::make('password'),
-                'role' => 'employee',
-                'is_active' => true,
-            ]);
-        }
+    // Initial Admin users are no longer generated via seeder.
+    // The first user should be created directly through the /setup browser flow.
     }
 }

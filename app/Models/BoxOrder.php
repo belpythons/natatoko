@@ -8,12 +8,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Factories\HasFactory; // Added this use statement
+use App\Traits\LogsActivity;
 
 class BoxOrder extends Model
 {
-    use LogsActivity;
+    use HasFactory, LogsActivity; // Added HasFactory here
     protected $fillable = [
         'customer_name',
         'box_template_id',
@@ -29,13 +29,6 @@ class BoxOrder extends Model
         'total_price' => 'decimal:2',
         'pickup_datetime' => 'datetime',
     ];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly($this->fillable)
-            ->logOnlyDirty();
-    }
 
     /**
      * Get the template for this order (optional for custom orders).

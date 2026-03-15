@@ -23,7 +23,7 @@ class TrendSeeder extends Seeder
         $this->command->info('Generating trend data for the last 30 days...');
 
         // Get existing data or create minimal required data
-        $employees = User::where('role', 'employee')->where('is_active', true)->get();
+        $employees = User::where('is_active', true)->get();
         if ($employees->isEmpty()) {
             $this->command->warn('No active employees found. Creating one...');
             $employees = collect([
@@ -160,7 +160,8 @@ class TrendSeeder extends Seeder
             if ($date->isPast() && $pickupDate->isPast()) {
                 // Past orders should be completed/cancelled
                 $status = rand(1, 10) <= 8 ? 'completed' : 'cancelled';
-            } else {
+            }
+            else {
                 $status = 'pending';
             }
 

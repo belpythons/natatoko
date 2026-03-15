@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { Head, useForm, router } from '@inertiajs/vue3'
 import { ref, h, computed } from 'vue'
+import MasterPinModal from '@/Components/MasterPinModal.vue'
 import { formatMoney } from '@/utils/formatMoney'
 import {
   Button,
@@ -56,7 +57,17 @@ const form = useForm({
   phone: '',
   address: '',
   is_active: true,
+  address: '',
+  is_active: true,
   product_templates: [],
+  master_pin: '',
+})
+
+const pinModal = ref({
+  show: false,
+  action: null,
+  payload: null,
+  text: '',
 })
 
 const openCreateModal = () => {
@@ -94,7 +105,26 @@ const removeTemplate = (index) => {
   form.product_templates.splice(index, 1)
 }
 
-const submit = () => {
+const requirePin = (action, payload, text) => {
+  pinModal.value = {
+    show: true,
+    action,
+    payload,
+    text,
+  }
+}
+
+const handlePinConfirm = (pin) => {
+  form.master_pin = pin
+  
+  if (pinModal.value.action === 'submit') {
+    executeSubmit()
+  } else if (pinModal.value.action === 'delete') {
+    executeDelete(pinModal.value.payload)
+  }
+}
+
+const executeSubmit = () => {
   if (editingPartner.value) {
     form.put(`/admin/partners/${editingPartner.value.id}`, {
       onSuccess: () => {
@@ -112,10 +142,28 @@ const submit = () => {
   }
 }
 
+const submit = () => {
+  requirePin('submit', null, editingPartner.value ? 'Menyimpan Perubahan Partner' : 'Membuat Partner Baru')
+}
+
+const executeDelete = (partner) => {
+  router.delete(`/admin/partners/${partner.id}`, {
+    data: { master_pin: form.master_pin },
+    onSuccess: () => {
+      pinModal.value.show = false
+      form.master_pin = ''
+    },
+    onError: (errors) => {
+      // Handle the master_pin error
+      if (errors.master_pin) {
+        form.setError('master_pin', errors.master_pin)
+      }
+    }
+  })
+}
+
 const deletePartner = (partner) => {
-  if (confirm(`Hapus partner "${partner.name}"?`)) {
-    router.delete(`/admin/partners/${partner.id}`)
-  }
+  requirePin('delete', partner, `Menghapus Partner "${partner.name}"`)
 }
 
 // Column definitions
@@ -368,5 +416,14 @@ const columns = [
         </div>
       </form>
     </Dialog>
+
+    <MasterPinModal
+      :show="pinModal.show"
+      :actionText="pinModal.text"
+      :processing="form.processing"
+      :error="form.errors.master_pin"
+      @close="pinModal.show = false; form.clearErrors('master_pin')"
+      @confirm="handlePinConfirm"
+    />
   </AdminLayout>
 </template>

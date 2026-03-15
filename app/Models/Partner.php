@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
+use App\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Partner extends Model
 {
-    use LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'name',
@@ -21,13 +21,6 @@ class Partner extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['*'])
-            ->logOnlyDirty();
-    }
 
     /**
      * Get the product templates for this partner.

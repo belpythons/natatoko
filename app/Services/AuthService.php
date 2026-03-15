@@ -55,15 +55,11 @@ class AuthService
     }
 
     /**
-     * Get redirect path based on user role.
+     * Get redirect path.
      */
     public function getRedirectPath(User $user): string
     {
-        return match ($user->role) {
-            'admin' => '/admin',
-            'employee' => '/pos/open',
-            default => '/dashboard',
-        };
+        return '/admin/dashboard';
     }
 
     /**

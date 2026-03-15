@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { UtensilsCrossed, Cookie, Plus, Pencil, Trash2, Package } from 'lucide-vue-next';
+import MasterPinModal from '@/Components/MasterPinModal.vue';
 
 const props = defineProps({
     templates: {
@@ -29,6 +30,14 @@ const form = useForm({
     price: '',
     items_json: [],
     is_active: true,
+    master_pin: '',
+});
+
+const pinModal = ref({
+    show: false,
+    action: null,
+    payload: null,
+    text: '',
 });
 
 const openCreateModal = () => {
@@ -59,7 +68,26 @@ const removeItem = (index) => {
     form.items_json.splice(index, 1);
 };
 
-const submit = () => {
+const requirePin = (action, payload, text) => {
+    pinModal.value = {
+        show: true,
+        action,
+        payload,
+        text,
+    };
+};
+
+const handlePinConfirm = (pin) => {
+    form.master_pin = pin;
+    
+    if (pinModal.value.action === 'submit') {
+        executeSubmit();
+    } else if (pinModal.value.action === 'delete') {
+        executeDelete(pinModal.value.payload);
+    }
+};
+
+const executeSubmit = () => {
     if (editingTemplate.value) {
         form.put(`/admin/box-templates/${editingTemplate.value.id}`, {
             onSuccess: () => {
@@ -77,10 +105,24 @@ const submit = () => {
     }
 };
 
+const submit = () => {
+    requirePin('submit', null, editingTemplate.value ? 'Menyimpan Perubahan Template' : 'Membuat Template Baru');
+};
+
+const executeDelete = (template) => {
+    form.delete(`/admin/box-templates/${template.id}`, {
+        onSuccess: () => {
+             pinModal.value.show = false;
+             form.master_pin = '';
+        },
+        onError: () => {
+            // Error handled by modal prop
+        }
+    });
+};
+
 const deleteTemplate = (template) => {
-    if (confirm(`Hapus template "${template.name}"?`)) {
-        useForm({}).delete(`/admin/box-templates/${template.id}`);
-    }
+    requirePin('delete', template, `Menghapus Template "${template.name}"`);
 };
 
 const formatCurrency = (value) => {
@@ -318,5 +360,14 @@ const formatCurrency = (value) => {
                 </form>
             </div>
         </div>
+
+        <MasterPinModal
+            :show="pinModal.show"
+            :actionText="pinModal.text"
+            :processing="form.processing"
+            :error="form.errors.master_pin"
+            @close="pinModal.show = false; form.clearErrors('master_pin')"
+            @confirm="handlePinConfirm"
+        />
     </AdminLayout>
 </template>

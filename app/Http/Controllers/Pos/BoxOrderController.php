@@ -33,7 +33,7 @@ class BoxOrderController extends Controller
      */
     public function index(): Response
     {
-        $user = auth()->user();
+        $user = \App\Models\User::first();
         $activeSession = $this->shopSessionService->getActiveSession($user);
 
         $upcomingOrders = $this->boxOrderService->getUpcomingOrders();
@@ -52,7 +52,7 @@ class BoxOrderController extends Controller
      */
     public function create(BoxTemplate $template = null): Response
     {
-        $user = auth()->user();
+        $user = \App\Models\User::first();
         $activeSession = $this->shopSessionService->getActiveSession($user);
 
         // Get all active box templates for dropdown

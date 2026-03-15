@@ -33,7 +33,7 @@ const showPassword = ref(false)
 // PIN digits display
 const pinDigits = computed(() => {
   const digits = pinForm.pin.split('')
-  return Array.from({ length: 4 }, (_, i) => digits[i] || '')
+  return Array.from({ length: 6 }, (_, i) => digits[i] || '')
 })
 
 // Numpad layout
@@ -53,11 +53,11 @@ const handleNumpadPress = (key) => {
     pinForm.pin = pinForm.pin.slice(0, -1)
     return
   }
-  if (pinForm.pin.length < 4) {
+  if (pinForm.pin.length < 6) {
     pinForm.pin += key
   }
-  // Auto-submit when 4 digits entered
-  if (pinForm.pin.length === 4) {
+  // Auto-submit when 6 digits entered
+  if (pinForm.pin.length === 6) {
     nextTick(() => submitPin())
   }
 }
@@ -110,7 +110,7 @@ const switchMode = (mode) => {
             </div>
             <CardTitle class="text-2xl text-slate-800">Masuk dengan PIN</CardTitle>
             <CardDescription class="text-slate-500">
-              Masukkan 4-digit PIN karyawan Anda
+              Masukkan 6-digit PIN karyawan Anda
             </CardDescription>
           </CardHeader>
 

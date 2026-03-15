@@ -14,7 +14,12 @@ class CheckSetup
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (User::where('role', 'admin')->exists()) {
+        if (\App\Models\User::count() === 0) {
+            if (!$request->is('setup')) {
+                return redirect()->route('setup');
+            }
+        }
+        elseif ($request->is('setup')) {
             return redirect('/login');
         }
 
