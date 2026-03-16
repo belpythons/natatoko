@@ -239,6 +239,23 @@ class BoxOrderController extends Controller
      */
     public function handleMayarWebhook(Request $request)
     {
+        // Security Enhancement: Verify Webhook Signature
+        // This prevents attackers from spoofing webhooks and marking orders as paid
+        $signature = $request->header('x-mayar-signature');
+        $secret = config('services.mayar.webhook_secret');
+
+        if (!$signature || !$secret) {
+            Log::warning('Mayar webhook missing signature or secret configured.');
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $expectedSignature = hash_hmac('sha256', $request->getContent(), $secret);
+
+        if (!hash_equals($expectedSignature, $signature)) {
+            Log::warning('Mayar webhook invalid signature provided.', ['ip' => $request->ip()]);
+            return response()->json(['message' => 'Invalid signature'], 401);
+        }
+
         Log::info('Mayar webhook received', $request->all());
 
         $transactionId = $request->input('data.id') ?? $request->input('transaction_id');
