@@ -125,7 +125,7 @@ const toggleSidebar = () => {
         <!-- Logo / Brand -->
         <div class="flex items-center space-x-3">
           <h1 class="text-xl font-bold tracking-tight text-foreground">
-            <span class="text-gradient-primary uppercase tracking-wider">Posita</span> POS
+            <span class="text-gradient-primary uppercase tracking-wider">Natatoko</span> POS
           </h1>
         </div>
 
