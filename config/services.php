@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'mayar' => [
+        'base_url' => env('MAYAR_BASE_URL', 'https://api.mayar.id'),
+        'api_key' => env('MAYAR_API_KEY'),
+    ],
+
 ];
