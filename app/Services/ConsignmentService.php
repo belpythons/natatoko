@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DailyConsignment;
 use App\Models\ShopSession;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ConsignmentService
 {
@@ -111,16 +112,21 @@ class ConsignmentService
      */
     public function bulkUpdateSoldQuantities(array $items): array
     {
-        $results = [];
+        $ids = array_column($items, 'id');
+        $consignments = DailyConsignment::whereIn('id', $ids)->get()->keyBy('id');
 
-        foreach ($items as $item) {
-            $consignment = DailyConsignment::find($item['id']);
-            if ($consignment) {
-                $results[] = $this->updateSoldQuantity($consignment, (int) $item['qty_sold']);
+        return DB::transaction(function () use ($items, $consignments) {
+            $results = [];
+
+            foreach ($items as $item) {
+                $consignment = $consignments->get($item['id']);
+                if ($consignment) {
+                    $results[] = $this->updateSoldQuantity($consignment, (int) $item['qty_sold']);
+                }
             }
-        }
 
-        return $results;
+            return $results;
+        });
     }
 
     /**
@@ -128,16 +134,21 @@ class ConsignmentService
      */
     public function bulkUpdateRemainingQuantities(array $items): array
     {
-        $results = [];
+        $ids = array_column($items, 'id');
+        $consignments = DailyConsignment::whereIn('id', $ids)->get()->keyBy('id');
 
-        foreach ($items as $item) {
-            $consignment = DailyConsignment::find($item['id']);
-            if ($consignment) {
-                $results[] = $this->updateRemainingQuantity($consignment, (int) $item['qty_remaining']);
+        return DB::transaction(function () use ($items, $consignments) {
+            $results = [];
+
+            foreach ($items as $item) {
+                $consignment = $consignments->get($item['id']);
+                if ($consignment) {
+                    $results[] = $this->updateRemainingQuantity($consignment, (int) $item['qty_remaining']);
+                }
             }
-        }
 
-        return $results;
+            return $results;
+        });
     }
 
     /**
