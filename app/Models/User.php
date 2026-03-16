@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use App\Traits\LogsActivity;
 
 class User extends Authenticatable
@@ -22,8 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'master_pin',
-        'store_pin',
+        'pin',
         'is_active',
         'profile_photo_path',
     ];
@@ -35,8 +35,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'master_pin',
-        'store_pin',
+        'pin',
         'remember_token',
     ];
 
@@ -55,25 +54,14 @@ class User extends Authenticatable
     }
 
     /**
-     * Auto-hash Master PIN using SHA-256 on set.
+     * Auto-hash PIN using Laravel's Hash (Bcrypt) on set.
      */
-    protected function masterPin(): Attribute
+    protected function pin(): Attribute
     {
         return Attribute::make(
-            set: fn (?string $value) => $value ? hash('sha256', $value) : null,
+            set: fn (?string $value) => $value ? Hash::make($value) : null,
         );
     }
-
-    /**
-     * Auto-hash Store PIN using SHA-256 on set.
-     */
-    protected function storePin(): Attribute
-    {
-        return Attribute::make(
-            set: fn (?string $value) => $value ? hash('sha256', $value) : null,
-        );
-    }
-
 
     /**
      * Get the shop sessions for this user.

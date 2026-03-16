@@ -29,7 +29,7 @@ class TrendSeeder extends Seeder
             $employees = collect([
                 User::create([
                     'name' => 'Kasir Demo',
-                    'email' => 'kasir.demo@posita.com',
+                    'email' => 'kasir.demo@natatoko.com',
                     'password' => bcrypt('password'),
                     'role' => 'employee',
                     'is_active' => true,

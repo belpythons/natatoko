@@ -23,6 +23,10 @@ class BoxOrder extends Model
         'payment_proof_path',
         'status',
         'cancellation_reason',
+        'payment_method',
+        'payment_status',
+        'mayar_link',
+        'mayar_transaction_id',
     ];
 
     protected $casts = [
