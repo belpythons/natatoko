@@ -137,7 +137,7 @@
 <body>
     <div class="header">
         <h1>LAPORAN SESI TOKO</h1>
-        <p>Posita POS System</p>
+        <p>Natatoko POS System</p>
     </div>
 
     <div class="info-section">
@@ -247,7 +247,7 @@
 
     <div class="footer">
         <p>Laporan dibuat pada: {{ $generated_at->format('d/m/Y H:i:s') }}</p>
-        <p>Posita POS System &copy; {{ date('Y') }}</p>
+        <p>Natatoko POS System &copy; {{ date('Y') }}</p>
     </div>
 </body>
 

@@ -13,8 +13,7 @@ const form = useForm({
   email: '',
   password: '',
   password_confirmation: '',
-  master_pin: '',
-  store_pin: '',
+  pin: '',
 })
 
 const showPassword = ref(false)
@@ -49,7 +48,7 @@ const submit = () => {
           </div>
           <CardTitle class="text-2xl text-slate-800">Selamat Datang!</CardTitle>
           <CardDescription class="text-slate-500">
-            Buat akun admin pertama untuk memulai Posita
+            Buat akun admin pertama untuk memulai Natatoko
           </CardDescription>
         </CardHeader>
 
@@ -89,7 +88,7 @@ const submit = () => {
                   variant="auth"
                   :error="!!form.errors.email"
                   class="pl-10 py-3 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500"
-                  placeholder="admin@posita.com"
+                  placeholder="admin@natatoko.com"
                   required
                   autocomplete="username"
                 />
@@ -129,49 +128,26 @@ const submit = () => {
               </p>
             </div>
 
-            <!-- Master PIN -->
+            <!-- unified PIN -->
             <div class="space-y-2">
-              <InputLabel for="master_pin" class="text-slate-700">Master PIN (6 Angka untuk Admin)</InputLabel>
+              <InputLabel for="pin" class="text-slate-700">PIN (6 Angka untuk Admin & POS)</InputLabel>
               <div class="relative">
                 <Lock class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 z-10" />
                 <TextInput
-                  id="master_pin"
+                  id="pin"
                   type="text"
                   inputmode="numeric"
                   maxlength="6"
-                  v-model="form.master_pin"
+                  v-model="form.pin"
                   variant="auth"
-                  :error="!!form.errors.master_pin"
+                  :error="!!form.errors.pin"
                   class="pl-10 py-3 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500"
                   placeholder="Contoh: 123456"
                   required
                 />
               </div>
-              <p v-if="form.errors.master_pin" class="text-sm text-red-400">
-                {{ form.errors.master_pin }}
-              </p>
-            </div>
-
-            <!-- Store PIN -->
-            <div class="space-y-2">
-              <InputLabel for="store_pin" class="text-slate-700">Store PIN (6 Angka untuk Staff Kasir)</InputLabel>
-              <div class="relative">
-                <Lock class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 z-10" />
-                <TextInput
-                  id="store_pin"
-                  type="text"
-                  inputmode="numeric"
-                  maxlength="6"
-                  v-model="form.store_pin"
-                  variant="auth"
-                  :error="!!form.errors.store_pin"
-                  class="pl-10 py-3 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500"
-                  placeholder="Contoh: 654321"
-                  required
-                />
-              </div>
-              <p v-if="form.errors.store_pin" class="text-sm text-red-400">
-                {{ form.errors.store_pin }}
+              <p v-if="form.errors.pin" class="text-sm text-red-400">
+                {{ form.errors.pin }}
               </p>
             </div>
 
@@ -217,7 +193,7 @@ const submit = () => {
               full-width
               size="lg"
             >
-              {{ form.processing ? 'Membuat Akun...' : 'Mulai Posita' }}
+              {{ form.processing ? 'Membuat Akun...' : 'Mulai Natatoko' }}
             </ActionButton>
           </form>
         </CardContent>

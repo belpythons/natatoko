@@ -14,6 +14,8 @@ use App\Services\BoxOrderService;
 use App\Services\ShopSessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -177,5 +179,97 @@ class BoxOrderController extends Controller
     public function downloadReceipt(BoxOrder $order)
     {
         return $this->boxOrderService->generateReceipt($order);
+    }
+
+    /**
+     * Create a Mayar.id QRIS payment for a box order.
+     */
+    public function createMayarPayment(Request $request, BoxOrder $order)
+    {
+        try {
+            $response = Http::withToken(config('services.mayar.api_key'))
+                ->post(config('services.mayar.base_url') . '/v1/payment/create', [
+                    'name' => $order->customer_name,
+                    'amount' => (int) $order->total_price,
+                    'description' => 'Order Box #' . $order->id . ' - ' . $order->customer_name,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json('data');
+
+                $order->update([
+                    'payment_method' => 'qris',
+                    'payment_status' => 'pending',
+                    'mayar_link' => $data['link'] ?? null,
+                    'mayar_transaction_id' => $data['id'] ?? null,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'link' => $data['link'] ?? null,
+                    'transaction_id' => $data['id'] ?? null,
+                ]);
+            }
+
+            Log::error('Mayar payment creation failed', [
+                'order_id' => $order->id,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat pembayaran QRIS.',
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Mayar payment exception', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat membuat pembayaran.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle incoming Mayar.id webhook callback.
+     */
+    public function handleMayarWebhook(Request $request)
+    {
+        Log::info('Mayar webhook received', $request->all());
+
+        $transactionId = $request->input('data.id') ?? $request->input('transaction_id');
+        $status = $request->input('data.status') ?? $request->input('status');
+
+        if (!$transactionId) {
+            return response()->json(['message' => 'No transaction ID provided.'], 400);
+        }
+
+        $order = BoxOrder::where('mayar_transaction_id', $transactionId)->first();
+
+        if (!$order) {
+            Log::warning('Mayar webhook: order not found', ['transaction_id' => $transactionId]);
+            return response()->json(['message' => 'Order not found.'], 404);
+        }
+
+        if (strtoupper($status) === 'SUCCESS') {
+            $order->update(['payment_status' => 'paid']);
+            Log::info('Mayar webhook: order paid', ['order_id' => $order->id]);
+        }
+
+        return response()->json(['message' => 'Webhook processed.'], 200);
+    }
+
+    /**
+     * Check the current payment status of an order (for frontend polling).
+     */
+    public function checkPaymentStatus(BoxOrder $order)
+    {
+        return response()->json([
+            'payment_status' => $order->payment_status,
+        ]);
     }
 }

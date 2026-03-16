@@ -129,7 +129,7 @@
 
     <div class="footer">
         <p>Laporan dibuat pada: {{ $generated_at->format('d/m/Y H:i:s') }}</p>
-        <p>Posita POS System</p>
+        <p>Natatoko POS System</p>
     </div>
 </body>
 

@@ -51,19 +51,17 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's PIN information.
+     * Update the user's POS PIN.
      */
     public function updatePin(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'master_pin' => ['required', 'string', 'digits:6'],
-            'store_pin' => ['required', 'string', 'digits:6'],
+            'pin' => ['required', 'string', 'digits:6'],
             'verify_password' => ['required', 'current_password'],
         ]);
 
         $request->user()->update([
-            'master_pin' => $validated['master_pin'],
-            'store_pin' => $validated['store_pin']
+            'pin' => $validated['pin'],
         ]);
 
         return Redirect::route('profile.edit');

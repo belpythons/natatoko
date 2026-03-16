@@ -256,8 +256,10 @@ onUnmounted(() => {
         
         <PaymentModal 
             :is-open="isPaymentModalOpen" 
+            :order-id="null"
             @close="isPaymentModalOpen = false"
             @complete="handleTransactionComplete"
+            @payment-success="handleTransactionComplete"
         />
     </EmployeeLayout>
 </template>

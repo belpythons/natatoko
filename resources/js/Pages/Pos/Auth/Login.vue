@@ -1,30 +1,30 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Sonner } from '@/Components/ui'
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, Link } from '@inertiajs/vue3'
 import { ref, computed } from 'vue'
 import { Lock, Delete } from 'lucide-vue-next'
 
 const form = useForm({
-  store_pin: '',
+  pin: '',
 })
 
 const addNumber = (num) => {
-  if (form.store_pin.length < 6) {
-    form.store_pin += num
+  if (form.pin.length < 6) {
+    form.pin += num
   }
 }
 
 const removeNumber = () => {
-  if (form.store_pin.length > 0) {
-    form.store_pin = form.store_pin.slice(0, -1)
+  if (form.pin.length > 0) {
+    form.pin = form.pin.slice(0, -1)
   }
 }
 
 const submit = () => {
-  if (form.store_pin.length === 6) {
+  if (form.pin.length === 6) {
     form.post('/pos/login', {
-      onFinish: () => form.reset('store_pin'),
+      onFinish: () => form.reset('pin'),
     })
   }
 }
@@ -32,7 +32,7 @@ const submit = () => {
 const pinDots = computed(() => {
   const dots = []
   for (let i = 0; i < 6; i++) {
-    dots.push(i < form.store_pin.length)
+    dots.push(i < form.pin.length)
   }
   return dots
 })
@@ -52,14 +52,14 @@ const pinDots = computed(() => {
             <Lock class="w-6 h-6 text-emerald-600" />
           </div>
           <CardTitle class="text-xl">POS Login</CardTitle>
-          <CardDescription>Masukkan Store PIN</CardDescription>
+          <CardDescription>Masukkan PIN POS</CardDescription>
         </CardHeader>
 
         <CardContent>
           <div class="flex flex-col items-center">
             
-            <p v-if="form.errors.store_pin" class="text-sm text-red-500 mb-4 text-center">
-              {{ form.errors.store_pin }}
+            <p v-if="form.errors.pin" class="text-sm text-red-500 mb-4 text-center">
+              {{ form.errors.pin }}
             </p>
 
             <!-- PIN Indicator Dots -->
@@ -103,13 +103,25 @@ const pinDots = computed(() => {
               <button 
                 type="button"
                 @click="submit"
-                :disabled="form.store_pin.length !== 6 || form.processing"
+                :disabled="form.pin.length !== 6 || form.processing"
                 class="h-16 rounded-2xl flex items-center justify-center transition-colors shadow-sm text-lg font-medium"
-                :class="form.store_pin.length === 6 ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-slate-100 text-slate-400 border border-slate-200'"
+                :class="form.pin.length === 6 ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-slate-100 text-slate-400 border border-slate-200'"
               >
                 OK
               </button>
             </div>
+
+            <!-- Admin Login Link -->
+            <div class="mt-6 text-center">
+              <Link
+                :href="route('login')"
+                class="text-sm font-medium text-slate-500 hover:text-emerald-600 transition-colors"
+                tabindex="-1"
+              >
+                Masuk sebagai Admin &rarr;
+              </Link>
+            </div>
+
           </div>
         </CardContent>
       </Card>

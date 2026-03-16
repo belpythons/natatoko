@@ -62,7 +62,7 @@ const handleClose = () => {
         </div>
         <CardTitle class="text-center text-lg">Otorisasi Diperlukan</CardTitle>
         <CardDescription class="text-center text-sm">
-          Masukkan <strong>Master PIN</strong> Anda untuk {{ actionText.toLowerCase() }}.
+          Masukkan <strong>PIN Admin</strong> Anda untuk {{ actionText.toLowerCase() }}.
         </CardDescription>
       </CardHeader>
 

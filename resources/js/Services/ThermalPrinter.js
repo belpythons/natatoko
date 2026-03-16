@@ -9,7 +9,7 @@
 export class ThermalPrinter {
     constructor(config = {}) {
         this.width = config.width || '58mm'; // '58mm' or '80mm'
-        this.storeName = config.storeName || 'POSITA Coffee';
+        this.storeName = config.storeName || 'NATATOKO Coffee';
         this.storeAddress = config.storeAddress || 'Ruko Grand Wisata AA 10/24';
         this.storePhone = config.storePhone || '0812-3456-7890';
         this.footerMessage = config.footerMessage || 'Terima Kasih!\nSilahkan Datang Kembali';
@@ -194,7 +194,7 @@ export class ThermalPrinter {
 
                 <div class="footer">
                     <p>${this.footerMessage.replace(/\n/g, '<br>')}</p>
-                    <p class="brand">Powered by Posita</p>
+                    <p class="brand">Powered by Natatoko</p>
                 </div>
             </div>
         `;

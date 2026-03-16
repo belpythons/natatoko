@@ -21,9 +21,12 @@ use Inertia\Inertia;
 Route::get('/setup', [SetupController::class , 'index'])->name('setup');
 Route::post('/setup', [SetupController::class , 'store']);
 
-// Redirect root
+// Redirect root based on setup status
 Route::get('/', function () {
-    return redirect()->route('login');
+    if (\App\Models\User::count() === 0) {
+        return redirect()->route('setup');
+    }
+    return redirect()->route('pos.login');
 });
 
 // General authenticated routes (Admin)
@@ -101,6 +104,17 @@ Route::middleware('pos_auth')->prefix('pos')->name('pos.')->group(function () {
     Route::post('/box/{order}/proof', [Pos\BoxOrderController::class , 'uploadProof'])->name('box.proof');
     Route::patch('/box/{order}/status', [Pos\BoxOrderController::class , 'updateStatus'])->name('box.status');
     Route::get('/box/{order}/receipt', [Pos\BoxOrderController::class , 'downloadReceipt'])->name('box.receipt');
+
+    // Mayar QRIS Payment
+    Route::post('/box/{order}/mayar-payment', [Pos\BoxOrderController::class , 'createMayarPayment'])->name('box.mayar-payment');
+    Route::get('/box/{order}/payment-status', [Pos\BoxOrderController::class , 'checkPaymentStatus'])->name('box.payment-status');
 });
+
+/*
+ |--------------------------------------------------------------------------
+ | Webhook Routes (No Auth / No CSRF)
+ |--------------------------------------------------------------------------
+ */
+Route::post('/webhook/mayar', [Pos\BoxOrderController::class , 'handleMayarWebhook'])->name('webhook.mayar');
 
 require __DIR__ . '/auth.php';

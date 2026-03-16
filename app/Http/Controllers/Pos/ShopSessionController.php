@@ -59,7 +59,7 @@ class ShopSessionController extends Controller
 
         try {
             $session = $this->shopSessionService->startSession(
-                $request->user(),
+                \App\Models\User::first(),
                 (float)$validated['opening_cash']
             );
 

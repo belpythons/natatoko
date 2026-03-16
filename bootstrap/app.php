@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CheckSetup::class,
         ]);
 
+        // Exempt Mayar webhook from CSRF protection
+        $middleware->validateCsrfTokens(except: [
+            'webhook/mayar',
+        ]);
+
         // Register middleware aliases
         $middleware->alias([
             'master_pin' => \App\Http\Middleware\MasterPinValidator::class,

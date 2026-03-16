@@ -85,7 +85,7 @@ const isActive = (href) => {
             </button>
 
             <h1 class="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <span class="text-primary text-2xl font-black tracking-tighter">Posita</span>
+                <span class="text-primary text-2xl font-black tracking-tighter">Natatoko</span>
                 <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Admin</span>
             </h1>
         </div>
@@ -244,7 +244,7 @@ const isActive = (href) => {
        <div class="flex flex-col h-full">
             <div class="p-6 border-b border-border">
                 <h2 class="text-2xl font-bold flex items-center gap-2">
-                    <span class="text-primary">Posita</span> Admin
+                    <span class="text-primary">Natatoko</span> Admin
                 </h2>
             </div>
             

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pos;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class AuthController extends Controller
@@ -22,25 +23,25 @@ class AuthController extends Controller
     }
 
     /**
-     * Authenticate Store PIN
+     * Authenticate POS PIN
      */
     public function login(Request $request)
     {
         $request->validate([
-            'store_pin' => 'required|string|digits:6',
+            'pin' => 'required|string|digits:6',
         ]);
 
         $admin = User::first();
 
-        // Check if the provided PIN matches the admin's hashed store_pin
-        if ($admin && hash('sha256', $request->store_pin) === $admin->store_pin) {
+        // Check if the provided PIN matches the admin's hashed pin
+        if ($admin && Hash::check($request->pin, $admin->pin)) {
             session(['pos_authenticated' => true]);
 
             return redirect()->route('pos.session.create');
         }
 
         return back()->withErrors([
-            'store_pin' => 'PIN yang Anda masukkan salah.',
+            'pin' => 'PIN yang Anda masukkan salah.',
         ]);
     }
 

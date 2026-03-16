@@ -27,16 +27,14 @@ class SetupController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'master_pin' => 'required|string|digits:6',
-            'store_pin' => 'required|string|digits:6',
+            'pin' => 'required|string|digits:6',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
-            'master_pin' => $validated['master_pin'],
-            'store_pin' => $validated['store_pin'],
+            'pin' => $validated['pin'],
             'is_active' => true,
         ]);
 

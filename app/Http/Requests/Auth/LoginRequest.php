@@ -45,9 +45,9 @@ class LoginRequest extends FormRequest
 
         // PIN-based authentication (admin quick login)
         if ($this->filled('pin')) {
-            $hashedPin = hash('sha256', $this->pin);
-
-            $user = User::where('master_pin', $hashedPin)->first();
+            $user = User::get()->first(function($u) {
+                return \Illuminate\Support\Facades\Hash::check($this->pin, $u->pin);
+            });
 
             if (!$user) {
                 RateLimiter::hit($this->throttleKey());
