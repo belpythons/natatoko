@@ -2,6 +2,8 @@
 
 **Nata Toko** is a modern, full-featured Point of Sale (POS) system built with Laravel 11, Vue 3, and Inertia.js. It supports real-time updates via WebSockets, QRIS payment integration through Mayar.id, and a clean dual-portal architecture (Admin + Cashier).
 
+LINK DEMO : https://youtu.be/7enzSIXDxH4
+
 ---
 
 ## 🛠 Tech Stack
