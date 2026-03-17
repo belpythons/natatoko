@@ -17,6 +17,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PartnerSeeder::class ,
             BoxTemplateSeeder::class ,
+            ShopSessionSeeder::class ,
+            BoxOrderSeeder::class ,
+            TodayBoxOrderSeeder::class ,
+            TrendSeeder::class ,
         ]);
     }
 }

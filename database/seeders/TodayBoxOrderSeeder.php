@@ -39,7 +39,8 @@ class TodayBoxOrderSeeder extends Seeder
             $status = 'pending';
             if ($pickupTime->isPast()) {
                 $status = $faker->randomElement(['completed', 'pending', 'paid', 'cancelled']);
-            } else {
+            }
+            else {
                 $status = $faker->randomElement(['pending', 'paid']);
             }
 
