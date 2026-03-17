@@ -59,7 +59,7 @@ class AuthService
      */
     public function getRedirectPath(User $user): string
     {
-        return '/admin/dashboard';
+        return '/admin';
     }
 
     /**

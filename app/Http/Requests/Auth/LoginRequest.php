@@ -28,9 +28,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pin' => ['nullable', 'string', 'digits:6'],
-            'email' => ['required_without:pin', 'nullable', 'string', 'email'],
-            'password' => ['required_without:pin', 'nullable', 'string'],
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
         ];
     }
 
@@ -43,25 +42,7 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // PIN-based authentication (admin quick login)
-        if ($this->filled('pin')) {
-            $user = User::get()->first(function($u) {
-                return \Illuminate\Support\Facades\Hash::check($this->pin, $u->pin);
-            });
 
-            if (!$user) {
-                RateLimiter::hit($this->throttleKey());
-
-                throw ValidationException::withMessages([
-                    'pin' => __('PIN tidak valid.'),
-                ]);
-            }
-
-            Auth::login($user, false);
-            RateLimiter::clear($this->throttleKey());
-
-            return;
-        }
 
         // Email/Password authentication
         if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
@@ -90,10 +71,8 @@ class LoginRequest extends FormRequest
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
-        $field = $this->filled('pin') ? 'pin' : 'email';
-
         throw ValidationException::withMessages([
-            $field => trans('auth.throttle', [
+            'email' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -105,10 +84,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        if ($this->filled('pin')) {
-            return 'pin|' . $this->ip();
-        }
-
         return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }

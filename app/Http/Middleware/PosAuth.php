@@ -14,7 +14,9 @@ class PosAuth
     public function handle(Request $request, Closure $next): Response
     {
         if (!session('pos_authenticated')) {
-            return redirect()->route('pos.login');
+            return redirect()->route('login')->withErrors([
+                'pin' => 'Silakan masuk menggunakan PIN untuk akses POS.'
+            ]);
         }
 
         return $next($request);
