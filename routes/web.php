@@ -26,7 +26,7 @@ Route::get('/', function () {
     if (\App\Models\User::count() === 0) {
         return redirect()->route('setup');
     }
-    return redirect()->route('pos.login');
+    return redirect()->route('login');
 });
 
 // General authenticated routes (Admin)
@@ -73,8 +73,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
  | POS Auth Routes
  |--------------------------------------------------------------------------
  */
-Route::get('/pos/login', [Pos\AuthController::class , 'showLogin'])->name('pos.login');
-Route::post('/pos/login', [Pos\AuthController::class , 'login']);
+Route::post('/pos/authenticate', [Pos\AuthController::class , 'login'])->name('pos.authenticate');
 
 /*
  |--------------------------------------------------------------------------

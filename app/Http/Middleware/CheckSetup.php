@@ -20,7 +20,7 @@ class CheckSetup
             }
         }
         elseif ($request->is('setup')) {
-            return redirect()->route('pos.login');
+            return redirect()->route('login');
         }
 
         return $next($request);

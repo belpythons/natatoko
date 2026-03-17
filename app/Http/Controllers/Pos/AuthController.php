@@ -11,18 +11,6 @@ use Inertia\Inertia;
 class AuthController extends Controller
 {
     /**
-     * Show Numpad Login Screen
-     */
-    public function showLogin()
-    {
-        if (session('pos_authenticated')) {
-            return redirect()->route('pos.session.create');
-        }
-
-        return Inertia::render('Pos/Auth/Login');
-    }
-
-    /**
      * Authenticate POS PIN
      */
     public function login(Request $request)
@@ -52,6 +40,6 @@ class AuthController extends Controller
     {
         $request->session()->forget('pos_authenticated');
 
-        return redirect()->route('pos.login');
+        return redirect()->route('login');
     }
 }
