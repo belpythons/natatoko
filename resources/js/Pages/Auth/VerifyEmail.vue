@@ -34,7 +34,7 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
 
         <form @submit.prevent="submit">
             <div class="mt-4 flex items-center justify-between">
-                <BaseButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <BaseButton type="submit" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                     Resend Verification Email
                 </BaseButton>
 
