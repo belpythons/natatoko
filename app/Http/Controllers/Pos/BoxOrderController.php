@@ -256,10 +256,14 @@ class BoxOrderController extends Controller
             return response()->json(['message' => 'Invalid signature'], 401);
         }
 
-        Log::info('Mayar webhook received', $request->all());
-
         $transactionId = $request->input('data.id') ?? $request->input('transaction_id');
         $status = $request->input('data.status') ?? $request->input('status');
+
+        // SECURITY FIX: Avoid logging $request->all() to prevent exposing sensitive customer/payment data
+        Log::info('Mayar webhook received', [
+            'transaction_id' => $transactionId,
+            'status' => $status
+        ]);
 
         if (!$transactionId) {
             return response()->json(['message' => 'No transaction ID provided.'], 400);
