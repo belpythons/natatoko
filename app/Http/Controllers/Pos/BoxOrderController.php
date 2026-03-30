@@ -103,7 +103,7 @@ class BoxOrderController extends Controller
     public function uploadProof(Request $request, int $orderId): RedirectResponse
     {
         $validated = $request->validate([
-            'payment_proof' => 'required|image|max:5120', // 5MB max
+            'payment_proof' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
         ]);
 
         $order = BoxOrder::findOrFail($orderId);
@@ -136,7 +136,7 @@ class BoxOrderController extends Controller
                 in_array($request->input('status'), ['paid', 'completed'])
                 && !$order->payment_proof_path
             ),
-                'nullable', 'image', 'max:5120',
+                'nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048',
             ],
             'cancellation_reason' => [
                 Rule::requiredIf($request->input('status') === 'cancelled'),

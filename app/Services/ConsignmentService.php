@@ -59,25 +59,30 @@ class ConsignmentService
      */
     public function updateSoldQuantity(DailyConsignment $consignment, int $qtySold): DailyConsignment
     {
-        // Validate qty_sold doesn't exceed qty_initial
-        if ($qtySold > $consignment->qty_initial) {
-            throw new \Exception('Jumlah terjual tidak boleh melebihi stok awal.');
-        }
+        return DB::transaction(function () use ($consignment, $qtySold) {
+            // Re-fetch to apply pessimistic locking during update
+            $consignment = DailyConsignment::where('id', $consignment->id)->lockForUpdate()->first();
 
-        if ($qtySold < 0) {
-            throw new \Exception('Jumlah terjual tidak boleh negatif.');
-        }
+            // Validate qty_sold doesn't exceed qty_initial
+            if ($qtySold > $consignment->qty_initial) {
+                throw new \Exception('Jumlah terjual tidak boleh melebihi stok awal.');
+            }
 
-        $qtyRemaining = $consignment->qty_initial - $qtySold;
-        $subtotalIncome = $qtySold * $consignment->selling_price;
+            if ($qtySold < 0) {
+                throw new \Exception('Jumlah terjual tidak boleh negatif.');
+            }
 
-        $consignment->update([
-            'qty_sold' => $qtySold,
-            'qty_remaining' => $qtyRemaining,
-            'subtotal_income' => $subtotalIncome,
-        ]);
+            $qtyRemaining = $consignment->qty_initial - $qtySold;
+            $subtotalIncome = $qtySold * $consignment->selling_price;
 
-        return $consignment->fresh();
+            $consignment->update([
+                'qty_sold' => $qtySold,
+                'qty_remaining' => $qtyRemaining,
+                'subtotal_income' => $subtotalIncome,
+            ]);
+
+            return $consignment->fresh();
+        });
     }
 
     /**
@@ -86,25 +91,30 @@ class ConsignmentService
      */
     public function updateRemainingQuantity(DailyConsignment $consignment, int $qtyRemaining): DailyConsignment
     {
-        // Validate qty_remaining doesn't exceed qty_initial
-        if ($qtyRemaining > $consignment->qty_initial) {
-            throw new \Exception('Sisa stok tidak boleh melebihi stok awal.');
-        }
+        return DB::transaction(function () use ($consignment, $qtyRemaining) {
+            // Re-fetch to apply pessimistic locking during update
+            $consignment = DailyConsignment::where('id', $consignment->id)->lockForUpdate()->first();
 
-        if ($qtyRemaining < 0) {
-            throw new \Exception('Sisa stok tidak boleh negatif.');
-        }
+            // Validate qty_remaining doesn't exceed qty_initial
+            if ($qtyRemaining > $consignment->qty_initial) {
+                throw new \Exception('Sisa stok tidak boleh melebihi stok awal.');
+            }
 
-        $qtySold = $consignment->qty_initial - $qtyRemaining;
-        $subtotalIncome = $qtySold * $consignment->selling_price;
+            if ($qtyRemaining < 0) {
+                throw new \Exception('Sisa stok tidak boleh negatif.');
+            }
 
-        $consignment->update([
-            'qty_sold' => $qtySold,
-            'qty_remaining' => $qtyRemaining,
-            'subtotal_income' => $subtotalIncome,
-        ]);
+            $qtySold = $consignment->qty_initial - $qtyRemaining;
+            $subtotalIncome = $qtySold * $consignment->selling_price;
 
-        return $consignment->fresh();
+            $consignment->update([
+                'qty_sold' => $qtySold,
+                'qty_remaining' => $qtyRemaining,
+                'subtotal_income' => $subtotalIncome,
+            ]);
+
+            return $consignment->fresh();
+        });
     }
 
     /**
