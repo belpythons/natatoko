@@ -15,9 +15,18 @@ return new class extends Migration {
             $table->string('store_pin', 64)->nullable()->after('master_pin');
 
             if (Schema::hasColumn('users', 'role')) {
+                // Drop index if it exists before dropping the column (SQLite issue)
+                $schemaManager = Schema::getConnection()->getSchemaBuilder();
+                if ($schemaManager->hasIndex('users', 'users_role_index')) {
+                    $table->dropIndex('users_role_index');
+                }
                 $table->dropColumn('role');
             }
             if (Schema::hasColumn('users', 'pin')) {
+                $schemaManager = Schema::getConnection()->getSchemaBuilder();
+                if ($schemaManager->hasIndex('users', 'users_pin_unique')) {
+                    $table->dropIndex('users_pin_unique');
+                }
                 $table->dropColumn('pin');
             }
         });

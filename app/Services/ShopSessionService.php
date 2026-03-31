@@ -16,6 +16,10 @@ class ShopSessionService
         // Check if user already has an open session
         $existingSession = $this->getActiveSession($user);
         if ($existingSession) {
+            // Check if it's from a previous day
+            if (Carbon::parse($existingSession->opened_at)->startOfDay()->lt(Carbon::today())) {
+                throw new \Exception('Anda belum menutup sesi shift sebelumnya. Harap tutup sesi lama terlebih dahulu.');
+            }
             throw new \Exception('Anda masih memiliki sesi toko yang aktif. Tutup sesi terlebih dahulu.');
         }
 
