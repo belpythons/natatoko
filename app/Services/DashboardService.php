@@ -332,21 +332,30 @@ class DashboardService
 
     /**
      * Get box order statistics.
-     * OPTIMIZED: Minimized queries.
+     * OPTIMIZED: Uses aggregated queries instead of multiple counts.
      */
     public function getBoxOrderStats(): array
     {
         $today = Carbon::today();
         $thisMonth = Carbon::now()->startOfMonth();
 
+        // ⚡ Bolt: Using selectRaw to combine multiple count/sum queries into one
+        // This reduces DB calls from 5 down to 2 for the stats gathering
+        $monthStats = BoxOrder::where('created_at', '>=', $thisMonth)
+            ->selectRaw("
+                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as today_orders,
+                SUM(CASE WHEN created_at >= ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as today_revenue,
+                COUNT(*) as month_orders,
+                SUM(CASE WHEN status IN ('paid', 'completed') THEN total_price ELSE 0 END) as month_revenue
+            ", [$today, $today])
+            ->first();
+
         return [
-            'today_orders' => BoxOrder::whereDate('created_at', $today)->count(),
-            'today_revenue' => (float)BoxOrder::whereDate('created_at', $today)
-            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
+            'today_orders' => (int) ($monthStats->today_orders ?? 0),
+            'today_revenue' => (float) ($monthStats->today_revenue ?? 0),
             'pending_orders' => BoxOrder::where('status', 'pending')->count(),
-            'month_orders' => BoxOrder::where('created_at', '>=', $thisMonth)->count(),
-            'month_revenue' => (float)BoxOrder::where('created_at', '>=', $thisMonth)
-            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
+            'month_orders' => (int) ($monthStats->month_orders ?? 0),
+            'month_revenue' => (float) ($monthStats->month_revenue ?? 0),
             'upcoming_pickups' => BoxOrder::where('pickup_datetime', '>=', Carbon::now())
             ->where('status', '!=', 'cancelled')
             ->orderBy('pickup_datetime')
