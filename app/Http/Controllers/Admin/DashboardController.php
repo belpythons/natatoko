@@ -36,9 +36,11 @@ class DashboardController extends Controller
         // Get today's shop sessions for sales summary
         $todaySessions = $this->shopSessionService->getTodaySessions();
 
-        // Get daily summary (includes box orders)
-        $dailySummary = $this->dashboardService->getDailySummary();
-        $dailySalesTotal = $dailySummary['total_revenue'];
+        // Get sales comparison (today vs yesterday) FIRST for optimized daily total
+        // ⚡ Bolt: Use aggregated $salesComparison['today'] instead of heavy $dailySummary
+        // $dailySummary loaded full Eloquent models & relations (N+1-like) just to sum revenue
+        $salesComparison = $this->dashboardService->getSalesComparison();
+        $dailySalesTotal = $salesComparison['today'];
 
         // Get pending box orders
         $pendingBoxOrders = $this->boxOrderService->getPendingOrders();
@@ -55,9 +57,6 @@ class DashboardController extends Controller
 
         // Get quick stats
         $quickStats = $this->dashboardService->getQuickStats();
-
-        // Get sales comparison (today vs yesterday)
-        $salesComparison = $this->dashboardService->getSalesComparison();
 
         // Get global profit
         $globalProfit = $this->dashboardService->getGlobalProfit();
