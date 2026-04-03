@@ -89,12 +89,10 @@ class BoxOrderService
     }
 
     /**
-     * Get orders with optional filters.
+     * Apply optional filters to the given query builder.
      */
-    public function getOrders(array $filters = []): Collection
+    private function applyFilters($query, array $filters = [])
     {
-        $query = BoxOrder::with(['template', 'items']);
-
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
@@ -110,6 +108,17 @@ class BoxOrderService
         if (!empty($filters['to_date'])) {
             $query->whereDate('pickup_datetime', '<=', $filters['to_date']);
         }
+
+        return $query;
+    }
+
+    /**
+     * Get orders with optional filters.
+     */
+    public function getOrders(array $filters = []): Collection
+    {
+        $query = BoxOrder::with(['template', 'items']);
+        $query = $this->applyFilters($query, $filters);
 
         return $query->orderBy('pickup_datetime', 'asc')->get();
     }
@@ -234,18 +243,29 @@ class BoxOrderService
 
     /**
      * Get order statistics.
+     * OPTIMIZED: Uses database aggregation instead of loading all models into memory.
      */
     public function getOrderStatistics(array $filters = []): array
     {
-        $orders = $this->getOrders($filters);
+        $query = BoxOrder::query();
+        $query = $this->applyFilters($query, $filters);
+
+        $stats = $query->selectRaw("
+            COUNT(*) as total_orders,
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_orders,
+            SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_orders,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_orders,
+            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_orders,
+            SUM(CASE WHEN status IN ('paid', 'completed') THEN total_price ELSE 0 END) as total_revenue
+        ")->first();
 
         return [
-            'total_orders' => $orders->count(),
-            'pending_orders' => $orders->where('status', 'pending')->count(),
-            'paid_orders' => $orders->where('status', 'paid')->count(),
-            'completed_orders' => $orders->where('status', 'completed')->count(),
-            'cancelled_orders' => $orders->where('status', 'cancelled')->count(),
-            'total_revenue' => $orders->whereIn('status', ['paid', 'completed'])->sum('total_price'),
+            'total_orders' => (int) ($stats->total_orders ?? 0),
+            'pending_orders' => (int) ($stats->pending_orders ?? 0),
+            'paid_orders' => (int) ($stats->paid_orders ?? 0),
+            'completed_orders' => (int) ($stats->completed_orders ?? 0),
+            'cancelled_orders' => (int) ($stats->cancelled_orders ?? 0),
+            'total_revenue' => (float) ($stats->total_revenue ?? 0),
         ];
     }
 }
