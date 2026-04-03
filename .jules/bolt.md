@@ -1,0 +1,3 @@
+## 2024-05-18 - Replacing In-Memory Collections with Database Aggregations
+**Learning:** Loading large datasets (like all historical orders) into memory using `->get()` and then filtering/aggregating via Laravel Collections (`->where()->count()`, `->sum()`) causes immense memory bloat and severe performance bottlenecks, especially when relationship eager-loading (N+1) is involved.
+**Action:** When calculating statistics or totals, always construct a database query using `->selectRaw()` with aggregate functions (`SUM`, `COUNT`, `CASE WHEN`) instead of fetching raw Eloquent models. Ensure the query utilizes existing filters seamlessly.
