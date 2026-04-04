@@ -297,26 +297,28 @@ class DashboardService
 
     /**
      * Get daily summary for a specific date.
-     * Uses eager loading to prevent N+1.
+     * OPTIMIZED: Uses database aggregation instead of collection processing.
+     * Uses eager loading to prevent N+1 for the returned session list.
      */
     public function getDailySummary(string $date = null): array
     {
-        $date = $date ?Carbon::parse($date) : Carbon::today();
+        $date = $date ? Carbon::parse($date) : Carbon::today();
 
+        // Load sessions for display
         $sessions = ShopSession::whereDate('opened_at', $date)
             ->with(['user', 'consignments'])
             ->get();
 
-        $boxOrders = BoxOrder::whereDate('created_at', $date)
-            ->whereIn('status', ['paid', 'completed'])
-            ->get();
-
-        // Use pre-loaded data for calculations
+        // Use pre-loaded data for session calculations to avoid extra DB query
         $sessionRevenue = $sessions->sum(fn($s) => $s->consignments->sum('subtotal_income'));
         $sessionProfit = $sessions->sum(function ($s) {
             return $s->consignments->sum(fn($c) => ($c->selling_price - $c->base_price) * $c->qty_sold);
         });
-        $boxRevenue = $boxOrders->sum('total_price');
+
+        // Use database aggregations for box orders to prevent loading models into memory
+        $boxRevenue = BoxOrder::whereDate('created_at', $date)
+            ->whereIn('status', ['paid', 'completed'])
+            ->sum('total_price') ?? 0;
 
         return [
             'date' => $date->format('Y-m-d'),
