@@ -36,9 +36,11 @@ class DashboardController extends Controller
         // Get today's shop sessions for sales summary
         $todaySessions = $this->shopSessionService->getTodaySessions();
 
-        // Get daily summary (includes box orders)
-        $dailySummary = $this->dashboardService->getDailySummary();
-        $dailySalesTotal = $dailySummary['total_revenue'];
+        // Get sales comparison (today vs yesterday)
+        $salesComparison = $this->dashboardService->getSalesComparison();
+
+        // Use today's sales from comparison to avoid redundant queries via getDailySummary()
+        $dailySalesTotal = $salesComparison['today'];
 
         // Get pending box orders
         $pendingBoxOrders = $this->boxOrderService->getPendingOrders();
@@ -55,9 +57,6 @@ class DashboardController extends Controller
 
         // Get quick stats
         $quickStats = $this->dashboardService->getQuickStats();
-
-        // Get sales comparison (today vs yesterday)
-        $salesComparison = $this->dashboardService->getSalesComparison();
 
         // Get global profit
         $globalProfit = $this->dashboardService->getGlobalProfit();
