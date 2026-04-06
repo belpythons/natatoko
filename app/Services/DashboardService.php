@@ -332,27 +332,46 @@ class DashboardService
 
     /**
      * Get box order statistics.
-     * OPTIMIZED: Minimized queries.
+     * OPTIMIZED: Minimized queries using conditional aggregation.
      */
     public function getBoxOrderStats(): array
     {
         $today = Carbon::today();
+        $tomorrow = Carbon::tomorrow();
         $thisMonth = Carbon::now()->startOfMonth();
 
+        // Use conditional aggregation to combine 5 queries into 1.
+        // Bounded to avoid full table scan: we only need records from this month OR pending records.
+        // Grouped logically to prevent bypassing Global Scopes.
+        $stats = BoxOrder::where(function ($query) use ($thisMonth) {
+                $query->where('status', 'pending')
+                      ->orWhere('created_at', '>=', $thisMonth);
+            })
+            ->selectRaw("
+                SUM(CASE WHEN created_at >= ? AND created_at < ? THEN 1 ELSE 0 END) as today_orders,
+                SUM(CASE WHEN created_at >= ? AND created_at < ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as today_revenue,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_orders,
+                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as month_orders,
+                SUM(CASE WHEN created_at >= ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as month_revenue
+            ", [
+                $today, $tomorrow,
+                $today, $tomorrow,
+                $thisMonth,
+                $thisMonth
+            ])->first();
+
         return [
-            'today_orders' => BoxOrder::whereDate('created_at', $today)->count(),
-            'today_revenue' => (float)BoxOrder::whereDate('created_at', $today)
-            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
-            'pending_orders' => BoxOrder::where('status', 'pending')->count(),
-            'month_orders' => BoxOrder::where('created_at', '>=', $thisMonth)->count(),
-            'month_revenue' => (float)BoxOrder::where('created_at', '>=', $thisMonth)
-            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
+            'today_orders' => (int) ($stats->today_orders ?? 0),
+            'today_revenue' => (float) ($stats->today_revenue ?? 0),
+            'pending_orders' => (int) ($stats->pending_orders ?? 0),
+            'month_orders' => (int) ($stats->month_orders ?? 0),
+            'month_revenue' => (float) ($stats->month_revenue ?? 0),
             'upcoming_pickups' => BoxOrder::where('pickup_datetime', '>=', Carbon::now())
-            ->where('status', '!=', 'cancelled')
-            ->orderBy('pickup_datetime')
-            ->limit(5)
-            ->with('template')
-            ->get(),
+                ->where('status', '!=', 'cancelled')
+                ->orderBy('pickup_datetime')
+                ->limit(5)
+                ->with('template')
+                ->get(),
         ];
     }
 
