@@ -1,0 +1,3 @@
+## 2024-05-24 - [Optimize getOrderStatistics]
+**Learning:** Using Eloquent collections to compute statistics (count, sum) heavily impacts memory and CPU, especially when fetching large datasets just to discard the models afterward.
+**Action:** Always favor database-level conditional aggregation (e.g., `SUM(CASE WHEN...)`) to push computations to the DB layer, preventing memory bloat and implicit N+1 queries.
