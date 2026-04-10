@@ -332,27 +332,35 @@ class DashboardService
 
     /**
      * Get box order statistics.
-     * OPTIMIZED: Minimized queries.
+     * OPTIMIZED: Unified queries using database aggregation.
      */
     public function getBoxOrderStats(): array
     {
         $today = Carbon::today();
         $thisMonth = Carbon::now()->startOfMonth();
 
-        return [
-            'today_orders' => BoxOrder::whereDate('created_at', $today)->count(),
-            'today_revenue' => (float)BoxOrder::whereDate('created_at', $today)
-            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
-            'pending_orders' => BoxOrder::where('status', 'pending')->count(),
-            'month_orders' => BoxOrder::where('created_at', '>=', $thisMonth)->count(),
-            'month_revenue' => (float)BoxOrder::where('created_at', '>=', $thisMonth)
-            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
-            'upcoming_pickups' => BoxOrder::where('pickup_datetime', '>=', Carbon::now())
+        $stats = BoxOrder::selectRaw("
+            SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as today_orders,
+            SUM(CASE WHEN created_at >= ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as today_revenue,
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_orders,
+            SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as month_orders,
+            SUM(CASE WHEN created_at >= ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as month_revenue
+        ", [$today, $today, $thisMonth, $thisMonth])->first();
+
+        $upcoming = BoxOrder::where('pickup_datetime', '>=', Carbon::now())
             ->where('status', '!=', 'cancelled')
             ->orderBy('pickup_datetime')
             ->limit(5)
             ->with('template')
-            ->get(),
+            ->get();
+
+        return [
+            'today_orders' => (int) ($stats->today_orders ?? 0),
+            'today_revenue' => (float) ($stats->today_revenue ?? 0),
+            'pending_orders' => (int) ($stats->pending_orders ?? 0),
+            'month_orders' => (int) ($stats->month_orders ?? 0),
+            'month_revenue' => (float) ($stats->month_revenue ?? 0),
+            'upcoming_pickups' => $upcoming,
         ];
     }
 
@@ -371,44 +379,45 @@ class DashboardService
 
     /**
      * Get global profit calculation.
-     * OPTIMIZED: Uses database aggregation.
+     * OPTIMIZED: Uses combined database aggregation for today and month.
      */
     public function getGlobalProfit(): array
     {
         $today = Carbon::today();
         $thisMonth = Carbon::now()->startOfMonth();
 
-        // Today's profit using aggregation
-        $todaySessionProfit = DailyConsignment::query()
+        // Combined profit using aggregation for Shop Sessions
+        $sessionProfitData = DailyConsignment::query()
             ->join('shop_sessions', 'daily_consignments.shop_session_id', '=', 'shop_sessions.id')
-            ->whereDate('shop_sessions.opened_at', $today)
             ->where('shop_sessions.status', 'closed')
-            ->selectRaw('SUM((daily_consignments.selling_price - daily_consignments.base_price) * daily_consignments.qty_sold) as profit')
-            ->value('profit') ?? 0;
-
-        $todayBoxProfit = BoxOrder::whereDate('created_at', $today)
-            ->whereIn('status', ['paid', 'completed'])
-            ->sum('total_price');
-
-        // Month's profit using aggregation
-        $monthSessionProfit = DailyConsignment::query()
-            ->join('shop_sessions', 'daily_consignments.shop_session_id', '=', 'shop_sessions.id')
             ->where('shop_sessions.opened_at', '>=', $thisMonth)
-            ->where('shop_sessions.status', 'closed')
-            ->selectRaw('SUM((daily_consignments.selling_price - daily_consignments.base_price) * daily_consignments.qty_sold) as profit')
-            ->value('profit') ?? 0;
+            ->selectRaw("
+                SUM(CASE WHEN shop_sessions.opened_at >= ? THEN (daily_consignments.selling_price - daily_consignments.base_price) * daily_consignments.qty_sold ELSE 0 END) as today_profit,
+                SUM((daily_consignments.selling_price - daily_consignments.base_price) * daily_consignments.qty_sold) as month_profit
+            ", [$today])
+            ->first();
 
-        $monthBoxProfit = BoxOrder::where('created_at', '>=', $thisMonth)
+        // Combined profit using aggregation for Box Orders
+        $boxProfitData = BoxOrder::where('created_at', '>=', $thisMonth)
             ->whereIn('status', ['paid', 'completed'])
-            ->sum('total_price');
+            ->selectRaw("
+                SUM(CASE WHEN created_at >= ? THEN total_price ELSE 0 END) as today_profit,
+                SUM(total_price) as month_profit
+            ", [$today])
+            ->first();
+
+        $todaySessionProfit = (float) ($sessionProfitData->today_profit ?? 0);
+        $monthSessionProfit = (float) ($sessionProfitData->month_profit ?? 0);
+        $todayBoxProfit = (float) ($boxProfitData->today_profit ?? 0);
+        $monthBoxProfit = (float) ($boxProfitData->month_profit ?? 0);
 
         return [
-            'today_profit' => (float)$todaySessionProfit + (float)$todayBoxProfit,
-            'today_session_profit' => (float)$todaySessionProfit,
-            'today_box_profit' => (float)$todayBoxProfit,
-            'month_profit' => (float)$monthSessionProfit + (float)$monthBoxProfit,
-            'month_session_profit' => (float)$monthSessionProfit,
-            'month_box_profit' => (float)$monthBoxProfit,
+            'today_profit' => $todaySessionProfit + $todayBoxProfit,
+            'today_session_profit' => $todaySessionProfit,
+            'today_box_profit' => $todayBoxProfit,
+            'month_profit' => $monthSessionProfit + $monthBoxProfit,
+            'month_session_profit' => $monthSessionProfit,
+            'month_box_profit' => $monthBoxProfit,
         ];
     }
 
