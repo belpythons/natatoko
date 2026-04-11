@@ -1,0 +1,3 @@
+## 2026-04-11 - Database Cross-Compatibility for Date Conditions
+**Learning:** Using database raw functions like `DATE(created_at)` fails when testing with SQLite versus MySQL because SQLite does not have a native `DATE()` function the same way (it prefers `strftime`). Also, Laravel's `whereDate()` cannot be easily combined within a single `selectRaw` string for multiple conditional fields in a cross-compatible way.
+**Action:** When doing conditional aggregations with dates (e.g. `SUM(CASE WHEN...)`) in Laravel, use explicit date boundaries (`>= $today AND < $tomorrow`) instead of raw date manipulation functions. This ensures compatibility across both SQLite (often used in testing) and MySQL (production) and allows the database engine to fully utilize date indexing.
