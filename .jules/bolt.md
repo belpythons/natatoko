@@ -1,0 +1,3 @@
+## 2025-04-12 - Combine Redundant Aggregate Queries
+**Learning:** When generating complex dashboard statistics, executing multiple distinct aggregate queries (e.g. `count()`, `sum()`) on the same table with overlapping date constraints leads to redundant database hits. This is an N+1-like anti-pattern.
+**Action:** Consolidate multiple aggregate queries into a single query using conditional aggregation (e.g., `selectRaw("SUM(CASE WHEN ... THEN ... ELSE 0 END)")`). This reduces database round-trips and is particularly effective for generating time-bound statistics (e.g. comparing "today" vs "this month" in one query).
