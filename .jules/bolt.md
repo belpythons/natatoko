@@ -1,0 +1,3 @@
+## 2024-05-18 - [Combine Multiple Aggregate Queries into Conditional Aggregation]
+**Learning:** In a dashboard where we fetch multiple metrics (like daily revenue, daily orders, monthly revenue, monthly orders) from the same table sequentially, each generates its own database round-trip. This can cause unnecessary DB load.
+**Action:** Use database-level conditional aggregation (e.g. `SUM(CASE WHEN date >= ? AND date < ? THEN value ELSE 0 END)`) using boundary checks (`>=` and `<`) on dates to safely merge multiple sequential query operations into a single query. Keep using standard SQL quotes (`'paid'`) to avoid cross-database syntax incompatibilities (like SQLite string vs MySQL string handling).

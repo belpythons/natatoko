@@ -332,21 +332,37 @@ class DashboardService
 
     /**
      * Get box order statistics.
-     * OPTIMIZED: Minimized queries.
+     * OPTIMIZED: Minimized queries by using conditional aggregation.
      */
     public function getBoxOrderStats(): array
     {
         $today = Carbon::today();
+        $tomorrow = Carbon::tomorrow();
         $thisMonth = Carbon::now()->startOfMonth();
 
+        $stats = BoxOrder::where(function ($query) use ($thisMonth) {
+                $query->where('created_at', '>=', $thisMonth)
+                      ->orWhere('status', 'pending');
+            })
+            ->selectRaw("
+            SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as month_orders,
+            SUM(CASE WHEN created_at >= ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as month_revenue,
+            SUM(CASE WHEN created_at >= ? AND created_at < ? THEN 1 ELSE 0 END) as today_orders,
+            SUM(CASE WHEN created_at >= ? AND created_at < ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as today_revenue,
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_orders
+        ", [
+            $thisMonth,
+            $thisMonth,
+            $today, $tomorrow,
+            $today, $tomorrow
+        ])->first();
+
         return [
-            'today_orders' => BoxOrder::whereDate('created_at', $today)->count(),
-            'today_revenue' => (float)BoxOrder::whereDate('created_at', $today)
-            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
-            'pending_orders' => BoxOrder::where('status', 'pending')->count(),
-            'month_orders' => BoxOrder::where('created_at', '>=', $thisMonth)->count(),
-            'month_revenue' => (float)BoxOrder::where('created_at', '>=', $thisMonth)
-            ->whereIn('status', ['paid', 'completed'])->sum('total_price'),
+            'today_orders' => (int) $stats->today_orders,
+            'today_revenue' => (float) $stats->today_revenue,
+            'pending_orders' => (int) $stats->pending_orders,
+            'month_orders' => (int) $stats->month_orders,
+            'month_revenue' => (float) $stats->month_revenue,
             'upcoming_pickups' => BoxOrder::where('pickup_datetime', '>=', Carbon::now())
             ->where('status', '!=', 'cancelled')
             ->orderBy('pickup_datetime')
@@ -371,44 +387,43 @@ class DashboardService
 
     /**
      * Get global profit calculation.
-     * OPTIMIZED: Uses database aggregation.
+     * OPTIMIZED: Uses conditional aggregation to reduce queries.
      */
     public function getGlobalProfit(): array
     {
         $today = Carbon::today();
+        $tomorrow = Carbon::tomorrow();
         $thisMonth = Carbon::now()->startOfMonth();
 
-        // Today's profit using aggregation
-        $todaySessionProfit = DailyConsignment::query()
+        $sessionProfitStats = DailyConsignment::query()
             ->join('shop_sessions', 'daily_consignments.shop_session_id', '=', 'shop_sessions.id')
-            ->whereDate('shop_sessions.opened_at', $today)
             ->where('shop_sessions.status', 'closed')
-            ->selectRaw('SUM((daily_consignments.selling_price - daily_consignments.base_price) * daily_consignments.qty_sold) as profit')
-            ->value('profit') ?? 0;
-
-        $todayBoxProfit = BoxOrder::whereDate('created_at', $today)
-            ->whereIn('status', ['paid', 'completed'])
-            ->sum('total_price');
-
-        // Month's profit using aggregation
-        $monthSessionProfit = DailyConsignment::query()
-            ->join('shop_sessions', 'daily_consignments.shop_session_id', '=', 'shop_sessions.id')
             ->where('shop_sessions.opened_at', '>=', $thisMonth)
-            ->where('shop_sessions.status', 'closed')
-            ->selectRaw('SUM((daily_consignments.selling_price - daily_consignments.base_price) * daily_consignments.qty_sold) as profit')
-            ->value('profit') ?? 0;
+            ->selectRaw("
+                SUM(CASE WHEN shop_sessions.opened_at >= ? AND shop_sessions.opened_at < ? THEN (daily_consignments.selling_price - daily_consignments.base_price) * daily_consignments.qty_sold ELSE 0 END) as today_profit,
+                SUM((daily_consignments.selling_price - daily_consignments.base_price) * daily_consignments.qty_sold) as month_profit
+            ", [$today, $tomorrow])
+            ->first();
 
-        $monthBoxProfit = BoxOrder::where('created_at', '>=', $thisMonth)
-            ->whereIn('status', ['paid', 'completed'])
-            ->sum('total_price');
+        $boxProfitStats = BoxOrder::where('created_at', '>=', $thisMonth)
+            ->selectRaw("
+            SUM(CASE WHEN created_at >= ? AND created_at < ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as today_profit,
+            SUM(CASE WHEN created_at >= ? AND status IN ('paid', 'completed') THEN total_price ELSE 0 END) as month_profit
+        ", [$today, $tomorrow, $thisMonth])->first();
+
+        $todaySessionProfit = (float) $sessionProfitStats?->today_profit;
+        $monthSessionProfit = (float) $sessionProfitStats?->month_profit;
+
+        $todayBoxProfit = (float) $boxProfitStats?->today_profit;
+        $monthBoxProfit = (float) $boxProfitStats?->month_profit;
 
         return [
-            'today_profit' => (float)$todaySessionProfit + (float)$todayBoxProfit,
-            'today_session_profit' => (float)$todaySessionProfit,
-            'today_box_profit' => (float)$todayBoxProfit,
-            'month_profit' => (float)$monthSessionProfit + (float)$monthBoxProfit,
-            'month_session_profit' => (float)$monthSessionProfit,
-            'month_box_profit' => (float)$monthBoxProfit,
+            'today_profit' => $todaySessionProfit + $todayBoxProfit,
+            'today_session_profit' => $todaySessionProfit,
+            'today_box_profit' => $todayBoxProfit,
+            'month_profit' => $monthSessionProfit + $monthBoxProfit,
+            'month_session_profit' => $monthSessionProfit,
+            'month_box_profit' => $monthBoxProfit,
         ];
     }
 
