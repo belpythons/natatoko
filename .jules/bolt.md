@@ -1,0 +1,3 @@
+## 2025-05-15 - [Database Aggregation for Multiple Ranges]
+**Learning:** In Laravel Eloquent, using multiple `whereDate` or `whereBetween` counting/summing queries on the same table for different date ranges (e.g. today vs month) creates severe N+1-like performance bottlenecks. Combining these into a single query using `selectRaw` and conditional aggregations (`SUM(CASE WHEN...)`) drastically improves performance (e.g., from 0.025s to 0.001s).
+**Action:** When a method needs multiple statistics from the same table (like counts and sums for today vs month), avoid calling `Model::where(...)->count()` multiple times. Instead, combine them into a single `selectRaw` statement with `SUM(CASE WHEN...)`.
