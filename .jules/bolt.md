@@ -1,0 +1,3 @@
+## 2024-05-18 - [Combine Multiple Aggregate Queries into Conditional Aggregation]
+**Learning:** Found multiple count and sum aggregate queries for `BoxOrder` stats occurring sequentially. While each query is simple, doing 4 separate queries causes 4 roundtrips to the DB which can be reduced to 1 roundtrip by using `SUM(CASE WHEN ... THEN X ELSE Y END)` and conditional aggregation. Measurement confirmed it is ~6x faster.
+**Action:** When calculating statistics that need different aggregates from the same table (but different conditional filters), prefer combining them using `selectRaw` and `SUM(CASE WHEN ... THEN ... ELSE ... END)` instead of executing multiple Eloquent queries sequentially.
