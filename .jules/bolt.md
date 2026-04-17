@@ -1,0 +1,3 @@
+## 2024-04-17 - [Combine Multiple Database Aggregations]
+**Learning:** Running multiple separate aggregate queries (`count()`, `sum()`) on the same table with overlapping where clauses (like `whereDate`) creates redundant database hits and can lead to full table scans.
+**Action:** Use `selectRaw` with conditional aggregation (`SUM(CASE WHEN ... THEN 1 ELSE 0 END)`) to combine multiple metrics into a single query, significantly reducing database load. When filtering by dates, prefer boundary checks (`>= today AND < tomorrow`) over raw database date functions for better cross-database compatibility and index utilization.
