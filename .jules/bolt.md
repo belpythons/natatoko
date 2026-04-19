@@ -1,0 +1,3 @@
+## 2024-05-24 - Database Aggregation over Collections
+**Learning:** In Laravel, retrieving all models into a Collection and then using Collection methods (like `->where()->count()` or `->sum()`) can lead to severe memory spikes and drastically poor performance (15.15s vs 0.068s for 100 iterations) as data sizes increase.
+**Action:** Always prefer DB-level aggregation (e.g. `query()->selectRaw()`) over loading data into memory when computing multi-faceted statistics across the same table. Use conditional aggregation (`SUM(CASE WHEN ... THEN 1 ELSE 0 END)`) to gather multiple metrics in a single query.
